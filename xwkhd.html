@@ -113,12 +113,9 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 }
 .ad-qr-box:active{transform:scale(.97);}
 .ad-qr-box img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px;}
-.ad-qr-box .ad-qr-ph{
-  font-size:52px;opacity:.4;color:#c1121f;
-}
-.ad-qr-box .ad-qr-hint{
-  position:absolute;left:0;right:0;bottom:6px;
-  font-size:10px;color:#a8968c;text-align:center;font-weight:600;
+.ad-qr-box .ad-qr-empty{
+  font-size:13px;color:#c9b8ae;font-weight:700;
+  text-align:center;line-height:1.6;padding:0 10px;
 }
 .ad-qr-tip{
   font-size:12px;color:rgba(255,255,255,.88);
@@ -128,7 +125,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 
 .ad-contact{margin-bottom:4px;}
 
-/* 电话/地址：字号缩小，保证地址一行显示 */
 .ad-line{
   display:flex;align-items:center;gap:10px;
   background:rgba(255,255,255,.14);
@@ -1138,7 +1134,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 
       <div class="ad-qr-wrap">
         <div class="ad-qr-box" id="adQrBox" onclick="viewAdQr()">
-          <span class="ad-qr-ph">💬</span>
+          <div class="ad-qr-empty" id="adQrEmpty">商家还没上传微信二维码</div>
         </div>
         <div class="ad-qr-tip" id="adQrTip">长按识别二维码 · 添加微信</div>
       </div>
@@ -1500,7 +1496,7 @@ const SafeStore = {
 
 let GOODS = SafeStore.get('fw_goods', null) || [];
 let ORDERS = SafeStore.get('fw_orders', null) || [];
-let QR_CODES = SafeStore.get('fw_qr_codes', { wx:'', ali:'', logo:'' });
+let QR_CODES = SafeStore.get('fw_qr_codes', { wx:'', ali:'', logo:'', wxAdd:'' });
 
 let SHOP_INFO = SafeStore.get('fw_shop_info', {
   phone: '13338092733',
@@ -1517,8 +1513,6 @@ let curDetailCode = null;
 let curDetailQty = 1;
 let curOrderCode = null;
 let pendingOrderCode = null;
-
-/* 提货时间基准（下单时间 + 1 分钟） */
 let minPickTime = null;
 
 function toast(msg){
@@ -1531,7 +1525,6 @@ function toast(msg){
 function saveCart(){ SafeStore.set('fw_shop_cart', CART); }
 function saveOrders(){ SafeStore.set('fw_orders', ORDERS); }
 
-/* 解析订单时间字符串 "YYYY-MM-DD HH:mm" */
 function parseOrderTime(str){
   if(!str) return null;
   try{
@@ -1551,15 +1544,20 @@ function parseOrderTime(str){
     document.getElementById('adLogo').innerHTML = `<img src="${logo}">`;
     document.getElementById('shopLogo').innerHTML = `<img src="${logo}">`;
   }
-  const qrSrc = SHOP_INFO.wxQr || QR_CODES.wx || '';
+
+  /* 只读 wxAdd：商家微信二维码。没有就留空白，不退回收款码 */
+  const qrSrc = QR_CODES.wxAdd || '';
   const qrBox = document.getElementById('adQrBox');
+  const qrEmpty = document.getElementById('adQrEmpty');
+  const qrTip = document.getElementById('adQrTip');
   if(qrSrc){
-    qrBox.innerHTML = `<img src="${qrSrc}" alt="微信二维码">`;
-    document.getElementById('adQrTip').textContent = '点击放大 · 长按识别二维码加微信';
+    qrBox.innerHTML = `<img src="${qrSrc}" alt="商家微信二维码">`;
+    qrTip.textContent = '点击放大 · 长按识别二维码加微信';
   } else {
-    qrBox.innerHTML = '<span class="ad-qr-ph">💬</span><div class="ad-qr-hint">待上传</div>';
-    document.getElementById('adQrTip').textContent = '商家还没上传微信二维码';
+    qrBox.innerHTML = '<div class="ad-qr-empty">商家还没上传微信二维码</div>';
+    qrTip.textContent = '长按识别二维码 · 添加微信';
   }
+
   const phone = SHOP_INFO.phone || '13338092733';
   document.getElementById('adPhone').textContent = phone;
   document.getElementById('adPhoneLine').href = 'tel:' + phone;
@@ -1582,7 +1580,8 @@ function parseOrderTime(str){
 })();
 
 function viewAdQr(){
-  const src = SHOP_INFO.wxQr || QR_CODES.wx;
+  /* 只有 wxAdd 存在才放大，否则不响应 */
+  const src = QR_CODES.wxAdd || '';
   if(!src){ toast('商家还没上传微信二维码'); return; }
   document.getElementById('imgViewerSrc').src = src;
   document.getElementById('imgViewer').classList.add('show');
@@ -1994,16 +1993,13 @@ function openPickTime(){
   const order = ORDERS.find(o=>o.code===curOrderCode);
   if(!order) return;
 
-  // 基准：下单时间 + 1 分钟
   const base = parseOrderTime(order.time) || new Date();
   minPickTime = new Date(base.getTime() + 60 * 1000);
 
-  // 更新副标题，让用户看到最低可选时间
   const pad = n => String(n).padStart(2,'0');
   const subEl = document.getElementById('timeSub');
   subEl.textContent = `最早可选：${minPickTime.getFullYear()}-${pad(minPickTime.getMonth()+1)}-${pad(minPickTime.getDate())} ${pad(minPickTime.getHours())}:${pad(minPickTime.getMinutes())}`;
 
-  // 绑定联动事件
   document.getElementById('pickYear').onchange = () => {
     rebuildPickMonths();
     rebuildPickDays();
@@ -2023,7 +2019,6 @@ function openPickTime(){
     rebuildPickMinutes();
   };
 
-  // 渲染
   rebuildPickYears();
   rebuildPickMonths();
   rebuildPickDays();
@@ -2137,7 +2132,6 @@ function rebuildPickMinutes(){
   });
 
   if(!opts){
-    // 本小时全被过滤，退回到 [0,15,30,45] 全部可选（一般是边界情况）
     [0,15,30,45].forEach(mm=>{
       opts += `<option value="${mm}">${String(mm).padStart(2,'0')} 分</option>`;
     });
