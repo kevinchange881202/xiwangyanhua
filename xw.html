@@ -309,18 +309,19 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .gcard .gc-actions .edit{background:#ffeaea;color:var(--red);}
 .gcard .gc-actions .danger{background:#fff;color:var(--red);border:1px solid #fca5a5;}
 
-.mov-list{display:flex;flex-direction:column;gap:8px;}
-.mov-item{background:#fff;border-radius:12px;border:1px solid var(--line);
-  padding:10px 14px;display:flex;align-items:center;gap:10px;}
-.mov-item .mi-badge{width:42px;height:42px;flex:0 0 42px;border-radius:11px;
-  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;}
+/* 入库明细：整体缩小一页 15 行 */
+.mov-list{display:flex;flex-direction:column;gap:6px;}
+.mov-item{background:#fff;border-radius:10px;border:1px solid var(--line);
+  padding:6px 10px;display:flex;align-items:center;gap:8px;}
+.mov-item .mi-badge{width:34px;height:34px;flex:0 0 34px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;}
 .mov-item .mi-badge.in{background:#e7f8ef;color:var(--green-d);}
 .mov-item .mi-info{flex:1;min-width:0;}
-.mov-item .mi-name{font-size:14.5px;font-weight:800;color:var(--t1);
+.mov-item .mi-name{font-size:13px;font-weight:800;color:var(--t1);line-height:1.2;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mov-item .mi-time{font-size:13px;color:var(--t2);margin-top:4px;font-weight:600;
-  font-family:"SF Mono",Consolas,monospace;letter-spacing:.3px;}
-.mov-item .mi-qty{font-size:18px;font-weight:900;color:var(--green);white-space:nowrap;}
+.mov-item .mi-time{font-size:11.5px;color:var(--t2);margin-top:2px;font-weight:500;
+  font-family:"SF Mono",Consolas,monospace;letter-spacing:.2px;line-height:1.2;}
+.mov-item .mi-qty{font-size:15px;font-weight:900;color:var(--green);white-space:nowrap;}
 
 .sum-list{display:flex;flex-direction:column;gap:10px;}
 .sum-group{background:#fff;border-radius:12px;border:1px solid var(--line);
@@ -420,7 +421,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 @media(min-width:520px){.form-grid{grid-template-columns:repeat(3,1fr);}}
 .form-grid .form-row{margin-bottom:0;}
 
-/* 视频链接 + 预览按钮 */
 .video-input-row{display:flex;gap:8px;align-items:stretch;}
 .video-input-row input{flex:1;min-width:0;}
 .video-preview-btn{
@@ -525,6 +525,19 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .pos-hdr .title .dot{width:8px;height:8px;border-radius:50%;background:#fff;}
 .pos-hdr .back{padding:7px 12px;border-radius:8px;background:rgba(255,255,255,.18);
   color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+
+/* 统一的手机扫码按钮：收银台和退货都用这个 */
+.pos-camera-btn{
+  padding:7px 12px;border-radius:8px;
+  background:linear-gradient(135deg,#4f7cff,#3d6aeb);
+  color:#fff;font-size:12px;font-weight:800;
+  display:flex;align-items:center;gap:4px;
+  box-shadow:0 4px 12px rgba(79,124,255,.4);
+  white-space:nowrap;transition:transform .15s;
+  margin-left:auto;
+}
+.pos-camera-btn:active{transform:scale(.96);}
+
 .pos-hdr .pos-return-btn{
   padding:7px 12px;border-radius:8px;
   background:linear-gradient(135deg,#ffd166,#f4a261);
@@ -534,17 +547,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   white-space:nowrap;transition:transform .15s;
 }
 .pos-hdr .pos-return-btn:active{transform:scale(.96);}
-.pos-hdr .pos-camera-btn{
-  padding:7px 12px;border-radius:8px;
-  background:linear-gradient(135deg,#4f7cff,#3d6aeb);
-  color:#fff;font-size:12px;font-weight:800;
-  display:flex;align-items:center;gap:4px;
-  box-shadow:0 4px 12px rgba(79,124,255,.4);
-  white-space:nowrap;transition:transform .15s;}
-.pos-hdr .pos-camera-btn:active{transform:scale(.96);}
-@media(max-width:520px){
-  .pos-hdr .title{display:none;}
-}
 
 .pos-scan{padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);flex:0 0 auto;}
 .pos-scan .sl{font-size:12px;color:var(--t3);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
@@ -572,7 +574,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .pos-item .pi-qty .q{font-size:17px;font-weight:800;min-width:28px;text-align:center;}
 .pos-item .pi-sub{font-size:16px;font-weight:800;min-width:70px;text-align:right;color:var(--red);}
 
-/* 已退货区域 */
 .pos-ret-section{
   margin-top:14px;
   padding-top:12px;
@@ -646,11 +647,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .return-hdr .back{padding:7px 12px;border-radius:8px;background:rgba(255,255,255,.35);
   color:#5c2c00;font-size:12px;font-weight:800;display:flex;align-items:center;gap:4px;white-space:nowrap;}
 .return-hdr .title{flex:1;font-size:16px;font-weight:800;text-align:center;letter-spacing:.5px;}
-.return-hdr .cam-btn{padding:7px 12px;border-radius:8px;
-  background:linear-gradient(135deg,#4f7cff,#3d6aeb);color:#fff;
-  font-size:12px;font-weight:800;display:flex;align-items:center;gap:4px;
-  box-shadow:0 4px 12px rgba(79,124,255,.4);white-space:nowrap;}
-.return-hdr .cam-btn:active{transform:scale(.96);}
 .return-scan{padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);flex:0 0 auto;}
 .return-scan .sl{font-size:12px;color:var(--t3);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
 .return-scan input{width:100%;height:52px;background:#fdf6f0;border-radius:14px;
@@ -1441,7 +1437,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   <div class="return-hdr">
     <button class="back" onclick="closeReturn()">← 返回</button>
     <div class="title">↩️ 退货</div>
-    <button class="cam-btn" onclick="startCameraScan('return')">📱 手机扫码</button>
+    <button class="pos-camera-btn" onclick="startCameraScan('return')">📱 手机扫码</button>
   </div>
   <div class="return-scan">
     <div class="sl">📷 扫码枪对准下方输入框</div>
@@ -1652,8 +1648,8 @@ let STAFF_RECENT = SafeStore.get('fw_staff_recent', []);
 let QR_CODES = SafeStore.get('fw_qr_codes', { wx:'', ali:'', logo:'' });
 
 let CART = [];
-let POS_RETURNS = [];     // 已确认的退货记录
-let RETURN_CART = [];     // 退货页正在扫的商品
+let POS_RETURNS = [];
+let RETURN_CART = [];
 let editingCode = null;
 let editingImg = '';
 let currentTab = 'goods';
@@ -1985,11 +1981,12 @@ function renderInvTable(){
       <td class="num-left">${g.stock}</td>
     </tr>
   `).join('');
-  pager.innerHTML = pages > 1 ? `
+  // 库存统计：始终显示翻页（即使只有一页）
+  pager.innerHTML = `
     <button ${invPage<=1?'disabled':''} onclick="invGo(${invPage-1})">上一页</button>
     <span class="pg-info">${invPage} / ${pages}</span>
     <button ${invPage>=pages?'disabled':''} onclick="invGo(${invPage+1})">下一页</button>
-  ` : '';
+  `;
 }
 function invGo(p){ invPage = p; renderInvTable(); }
 
@@ -2164,6 +2161,7 @@ function renderLowStock(){
   const total = list.length;
   const pages = Math.ceil(total / LOW_PER_PAGE);
   if(lowStockPage > pages) lowStockPage = pages;
+  if(lowStockPage < 1) lowStockPage = 1;
   const start = (lowStockPage-1)*LOW_PER_PAGE;
   const slice = list.slice(start, start + LOW_PER_PAGE);
   box.innerHTML=slice.map(g=>{
@@ -2176,11 +2174,12 @@ function renderLowStock(){
         <div class="ll-stock ${cls}">${g.stock}</div>
       </div>`;
   }).join('');
-  pager.innerHTML = pages > 1 ? `
+  // 库存预警：始终显示翻页（即使只有一页）
+  pager.innerHTML = `
     <button ${lowStockPage<=1?'disabled':''} onclick="lowStockGo(${lowStockPage-1})">上一页</button>
     <span class="pg-info">${lowStockPage} / ${pages}</span>
     <button ${lowStockPage>=pages?'disabled':''} onclick="lowStockGo(${lowStockPage+1})">下一页</button>
-  ` : '';
+  `;
 }
 function lowStockGo(p){
   lowStockPage = p;
@@ -2370,7 +2369,7 @@ function capturePhoto(){
     return;
   }
   const vw = v.videoWidth, vh = v.videoHeight;
-  const ratio = 16/10; // 与商品图预览框一致
+  const ratio = 16/10;
   let cw, ch;
   if(vw / vh > ratio){ ch = vh; cw = vh * ratio; }
   else { cw = vw; ch = vw / ratio; }
