@@ -1601,7 +1601,6 @@ const SFX = (function(){
       return ctx;
     }catch(e){ return null; }
   }
-  // 单音：freq 频率，dur 时长(秒)，type 波形，vol 音量，delay 延迟
   function tone(freq, dur, type, vol, delay){
     const c = getCtx(); if(!c) return;
     const t0 = c.currentTime + (delay || 0);
@@ -1617,7 +1616,6 @@ const SFX = (function(){
     osc.start(t0);
     osc.stop(t0 + dur + 0.03);
   }
-  // 短噪声：模拟"嗒"的机械按键感
   function noise(dur, vol, delay){
     const c = getCtx(); if(!c) return;
     const t0 = c.currentTime + (delay || 0);
@@ -1643,19 +1641,14 @@ const SFX = (function(){
     src.stop(t0 + dur + 0.02);
   }
   return {
-    // 普通按钮：轻点，短促"哒"
+    // 普通按钮（现在所有按钮统一用这个）：轻点短促"哒"
     click(){ noise(0.045, 0.07); tone(1180, 0.03, 'sine', 0.05, 0.005); },
-    // 主要操作（保存/确认/收款/入口）：清脆"叮"
+    // 以下保留给非按钮场景使用
     primary(){ tone(880, 0.055, 'triangle', 0.1); tone(1320, 0.07, 'sine', 0.06, 0.03); },
-    // 切换 tab：轻微"嗒"
     toggle(){ tone(1000, 0.035, 'sine', 0.06); },
-    // 危险/取消：低沉一点
     warn(){ tone(340, 0.09, 'triangle', 0.1); tone(240, 0.12, 'sine', 0.07, 0.04); },
-    // 成功：上扬双音
     success(){ tone(780, 0.07, 'sine', 0.1); tone(1170, 0.11, 'sine', 0.09, 0.06); },
-    // 错误：下降双音
     error(){ tone(420, 0.09, 'square', 0.07); tone(220, 0.16, 'square', 0.07, 0.08); },
-    // 扫码成功：清脆"滴"
     scan(){ tone(1760, 0.07, 'sine', 0.13); tone(2350, 0.045, 'sine', 0.07, 0.025); }
   };
 })();
@@ -1674,7 +1667,7 @@ const SafeStore = {
 };
 
 /* ========== 登录态（3 分钟免密） ========== */
-const AUTH_DURATION = 3 * 60 * 1000; // 3 分钟
+const AUTH_DURATION = 3 * 60 * 1000;
 function setAuth(key){
   try{ sessionStorage.setItem(key, String(Date.now() + AUTH_DURATION)); }catch(e){}
 }
@@ -1786,7 +1779,6 @@ function addMovement(name, code, type, qty){
 })();
 
 function requestAdmin(){
-  // 3 分钟内已通过验证，免密进入
   if(isAuthValid('fw_admin_auth')){
     document.getElementById('landing').classList.remove('show');
     document.getElementById('staffApp').classList.remove('show');
@@ -1804,7 +1796,6 @@ function requestAdmin(){
   setTimeout(()=>document.getElementById('pwdInput').focus(),100);
 }
 function requestStaff(){
-  // 3 分钟内已通过验证，免密进入
   if(isAuthValid('fw_staff_auth')){
     document.getElementById('landing').classList.remove('show');
     document.getElementById('adminApp').classList.remove('show');
@@ -2525,7 +2516,7 @@ function handleStaffCode(code){
   document.getElementById('staffScanBox').classList.add('active');
   const g=GOODS.find(x=>x.code===code);
   if(g){
-    SFX.scan();                 // 扫码成功：滴
+    SFX.scan();
     showStaffResult(g);
   } else {
     SFX.error();
@@ -2762,7 +2753,7 @@ function handlePosCode(code){
   else CART.push({code:g.code, name:g.name, price:g.suggestPrice, icon:g.icon, img:g.img||'', qty:1});
   renderPos();
   focusPosInput();
-  SFX.scan();                    // 扫码成功：滴
+  SFX.scan();
   toast('已加入购物车：'+g.name);
 }
 
@@ -2957,7 +2948,7 @@ function handlePosScan(e){
   const item=CART.find(x=>x.code===code);
   if(item)item.qty++;
   else CART.push({code:g.code,name:g.name,price:g.suggestPrice,icon:g.icon,img:g.img||'',qty:1});
-  SFX.scan();                    // 扫码枪扫码成功：滴
+  SFX.scan();
   renderPos();focusPosInput();
 }
 function renderPos(){
@@ -3082,7 +3073,7 @@ function addReturnItem(code){
   const item = RETURN_CART.find(x=>x.code===code);
   if(item) item.qty++;
   else RETURN_CART.push({code:g.code,name:g.name,price:g.suggestPrice,icon:g.icon,img:g.img||'',qty:1});
-  SFX.scan();                    // 退货扫码成功：滴
+  SFX.scan();
   renderReturnCart();
 }
 function changeReturnQty(code,d){
@@ -3275,42 +3266,13 @@ document.addEventListener('click',e=>{
   }
 });
 
-/* ========== 全局按钮音效监听（capture 阶段，先于内联 onclick） ========== */
+/* ========== 全局按钮音效监听 ==========
+   现在所有按钮统一使用 SFX.click()（与"管理员密码"按钮相同的轻点音）。
+   扫码成功、登录成功、操作成功、密码错误这些非按钮音效保持原样。 */
 document.addEventListener('click', function(e){
-  const btn = e.target.closest('button, .entry-btn, .side-item, .atab, .otab, .gcard .gc-actions button, .otab, .warn-btn, .staff-camera-btn, .pos-camera-btn, .pos-return-btn, .cash-switch, .confirm-pay, .back-pos, .btn-up, .btn-rm, .mh-btn, .btn-half, .scan-btn, .video-preview-btn, .capture-btn');
+  const btn = e.target.closest('button, .entry-btn, .side-item, .atab, .otab, .gcard .gc-actions button, .warn-btn, .staff-camera-btn, .pos-camera-btn, .pos-return-btn, .cash-switch, .confirm-pay, .back-pos, .btn-up, .btn-rm, .mh-btn, .btn-half, .scan-btn, .video-preview-btn, .capture-btn');
   if(!btn) return;
   if(btn.disabled) return;
-
-  // 分类判断
-  const cls = btn.classList;
-  // 危险/取消类：低沉音
-  if(cls.contains('danger') || cls.contains('clear-btn') ||
-     cls.contains('cancel') || cls.contains('btn-rm') ||
-     cls.contains('back') || cls.contains('cancel-btn')){
-    SFX.warn();
-    return;
-  }
-  // 主要操作类：清脆"叮"
-  if(cls.contains('pay-btn') || cls.contains('save') ||
-     cls.contains('primary') || cls.contains('confirm-pay') ||
-     cls.contains('entry-btn') || cls.contains('confirm-btn') ||
-     cls.contains('ok') || cls.contains('mh-btn') ||
-     cls.contains('btn-up') || cls.contains('cash-switch') ||
-     cls.contains('pos-camera-btn') || cls.contains('pos-return-btn') ||
-     cls.contains('staff-camera-btn') || cls.contains('video-preview-btn') ||
-     cls.contains('scan-btn') || cls.contains('staff-op') ||
-     cls.contains('in') || cls.contains('out') ||
-     cls.contains('capture-btn') || cls.contains('btn-half')){
-    SFX.primary();
-    return;
-  }
-  // 切换类：轻"嗒"
-  if(cls.contains('otab') || cls.contains('atab') ||
-     cls.contains('side-item') || cls.contains('warn-btn')){
-    SFX.toggle();
-    return;
-  }
-  // 其他按钮：默认点击音
   SFX.click();
 }, true);
 
