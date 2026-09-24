@@ -309,18 +309,18 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .gcard .gc-actions .edit{background:#ffeaea;color:var(--red);}
 .gcard .gc-actions .danger{background:#fff;color:var(--red);border:1px solid #fca5a5;}
 
-.mov-list{display:flex;flex-direction:column;gap:10px;}
+.mov-list{display:flex;flex-direction:column;gap:8px;}
 .mov-item{background:#fff;border-radius:12px;border:1px solid var(--line);
-  padding:14px 16px;display:flex;align-items:center;gap:14px;}
-.mov-item .mi-badge{width:52px;height:52px;flex:0 0 52px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;}
+  padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.mov-item .mi-badge{width:42px;height:42px;flex:0 0 42px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;}
 .mov-item .mi-badge.in{background:#e7f8ef;color:var(--green-d);}
 .mov-item .mi-info{flex:1;min-width:0;}
-.mov-item .mi-name{font-size:17px;font-weight:800;color:var(--t1);
+.mov-item .mi-name{font-size:14.5px;font-weight:800;color:var(--t1);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mov-item .mi-time{font-size:16px;color:var(--t1);margin-top:6px;font-weight:600;
+.mov-item .mi-time{font-size:13px;color:var(--t2);margin-top:4px;font-weight:600;
   font-family:"SF Mono",Consolas,monospace;letter-spacing:.3px;}
-.mov-item .mi-qty{font-size:22px;font-weight:900;color:var(--green);white-space:nowrap;}
+.mov-item .mi-qty{font-size:18px;font-weight:900;color:var(--green);white-space:nowrap;}
 
 .sum-list{display:flex;flex-direction:column;gap:10px;}
 .sum-group{background:#fff;border-radius:12px;border:1px solid var(--line);
@@ -394,10 +394,12 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .inv-empty .ei{font-size:52px;opacity:.4;margin-bottom:12px;}
 .inv-empty .et{font-size:14px;font-weight:700;margin-bottom:6px;}
 
-.low-list .ll-item{display:flex;align-items:center;gap:12px;padding:14px 4px;border-bottom:1px solid #f5f7fc;}
+.low-list .ll-item{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid #f5f7fc;}
 .low-list .ll-item:last-child{border-bottom:none;}
-.low-list .ll-icon{width:44px;height:44px;flex:0 0 44px;border-radius:12px;
-  background:linear-gradient(135deg,#fff5f5,#ffe0e0);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.low-list .ll-icon{width:56px;height:56px;flex:0 0 56px;border-radius:14px;
+  background:linear-gradient(135deg,#fff5f5,#ffe0e0);display:flex;align-items:center;justify-content:center;font-size:26px;
+  overflow:hidden;}
+.low-list .ll-icon img{width:100%;height:100%;object-fit:cover;}
 .low-list .ll-info{flex:1;min-width:0;}
 .low-list .ll-name{font-size:14.5px;font-weight:700;}
 .low-list .ll-code{font-size:11.5px;color:var(--t3);margin-top:3px;font-family:"SF Mono",Consolas,monospace;}
@@ -468,12 +470,12 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   font-weight:600;
 }
 .img-upload-block .img-actions{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
 }
 .img-upload-block .img-actions button{
   height:44px;border-radius:10px;
-  font-size:13.5px;font-weight:800;
-  display:flex;align-items:center;justify-content:center;gap:5px;
+  font-size:12.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:4px;
   transition:transform .15s;
 }
 .img-upload-block .img-actions button:active{transform:scale(.97);}
@@ -516,21 +518,33 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 
 .pos{position:fixed;inset:0;display:none;flex-direction:column;background:#fdf6f0;z-index:200;}
 .pos.show{display:flex;}
-.pos-hdr{flex:0 0 auto;padding:calc(12px + var(--st)) 16px 12px;
+.pos-hdr{flex:0 0 auto;padding:calc(12px + var(--st)) 12px 12px;
   background:linear-gradient(135deg,#12b76a,#0a9d56);color:#fff;
-  display:flex;align-items:center;gap:10px;}
-.pos-hdr .title{flex:1;font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  display:flex;align-items:center;gap:8px;}
+.pos-hdr .title{flex:1;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;justify-content:center;}
 .pos-hdr .title .dot{width:8px;height:8px;border-radius:50%;background:#fff;}
-.pos-hdr .back{padding:8px 14px;border-radius:8px;background:rgba(255,255,255,.18);
-  color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:5px;}
+.pos-hdr .back{padding:7px 12px;border-radius:8px;background:rgba(255,255,255,.18);
+  color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.pos-hdr .pos-return-btn{
+  padding:7px 12px;border-radius:8px;
+  background:linear-gradient(135deg,#ffd166,#f4a261);
+  color:#5c2c00;font-size:12px;font-weight:800;
+  display:flex;align-items:center;gap:4px;
+  box-shadow:0 4px 12px rgba(244,162,97,.4);
+  white-space:nowrap;transition:transform .15s;
+}
+.pos-hdr .pos-return-btn:active{transform:scale(.96);}
 .pos-hdr .pos-camera-btn{
-  padding:8px 14px;border-radius:8px;
+  padding:7px 12px;border-radius:8px;
   background:linear-gradient(135deg,#4f7cff,#3d6aeb);
-  color:#fff;font-size:12.5px;font-weight:800;
-  display:flex;align-items:center;gap:5px;
+  color:#fff;font-size:12px;font-weight:800;
+  display:flex;align-items:center;gap:4px;
   box-shadow:0 4px 12px rgba(79,124,255,.4);
   white-space:nowrap;transition:transform .15s;}
 .pos-hdr .pos-camera-btn:active{transform:scale(.96);}
+@media(max-width:520px){
+  .pos-hdr .title{display:none;}
+}
 
 .pos-scan{padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);flex:0 0 auto;}
 .pos-scan .sl{font-size:12px;color:var(--t3);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
@@ -542,10 +556,12 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 @keyframes scanFlash{0%{background:#d1fae5;}100%{background:#fdf6f0;}}
 .pos-list{flex:1;min-height:0;overflow-y:auto;padding:12px 16px;}
 .pos-list::-webkit-scrollbar{width:0;}
-.pos-item{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;
+.pos-item{background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:10px;
   display:flex;align-items:center;gap:12px;}
-.pos-item .pi-icon{width:44px;height:44px;flex:0 0 44px;border-radius:12px;
-  background:linear-gradient(135deg,#fdf6f0,#ffe8dd);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.pos-item .pi-icon{width:56px;height:56px;flex:0 0 56px;border-radius:12px;
+  background:linear-gradient(135deg,#fdf6f0,#ffe8dd);display:flex;align-items:center;justify-content:center;font-size:26px;
+  overflow:hidden;}
+.pos-item .pi-icon img{width:100%;height:100%;object-fit:cover;display:block;}
 .pos-item .pi-info{flex:1;min-width:0;}
 .pos-item .pi-name{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .pos-item .pi-price{font-size:13px;color:var(--t3);margin-top:4px;}
@@ -555,23 +571,142 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   color:var(--t2);font-size:18px;display:flex;align-items:center;justify-content:center;}
 .pos-item .pi-qty .q{font-size:17px;font-weight:800;min-width:28px;text-align:center;}
 .pos-item .pi-sub{font-size:16px;font-weight:800;min-width:70px;text-align:right;color:var(--red);}
+
+/* 已退货区域 */
+.pos-ret-section{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:2px dashed #f0e0d5;
+}
+.pos-ret-section .prs-title{
+  font-size:12.5px;
+  font-weight:800;
+  color:var(--red);
+  margin-bottom:8px;
+  padding-left:2px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.pos-ret-item{
+  background:#fff8f0;
+  border:1px solid #ffe0d0;
+  border-radius:14px;
+  padding:10px 12px;
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.pos-ret-item .pri-icon{width:44px;height:44px;flex:0 0 44px;border-radius:10px;
+  background:linear-gradient(135deg,#fff0e6,#ffe0d0);display:flex;align-items:center;justify-content:center;font-size:22px;
+  overflow:hidden;position:relative;}
+.pos-ret-item .pri-icon::after{
+  content:'';position:absolute;inset:0;
+  background:rgba(193,18,31,.12);
+}
+.pos-ret-item .pri-icon img{width:100%;height:100%;object-fit:cover;display:block;}
+.pos-ret-item .pri-info{flex:1;min-width:0;}
+.pos-ret-item .pri-name{font-size:14px;font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2);}
+.pos-ret-item .pri-price{font-size:12px;color:var(--t3);margin-top:3px;}
+.pos-ret-item .pri-qty{font-size:15px;font-weight:800;color:var(--red);min-width:40px;text-align:center;}
+.pos-ret-item .pri-sub{font-size:15px;font-weight:800;min-width:64px;text-align:right;color:var(--red);}
+
 .pos-empty{text-align:center;padding:60px 20px;color:var(--t3);}
 .pos-empty .ei{font-size:60px;opacity:.3;margin-bottom:14px;}
 .pos-empty .et{font-size:15px;font-weight:700;margin-bottom:6px;}
 .pos-empty .es{font-size:12.5px;}
 .pos-foot{flex:0 0 auto;background:#fff;border-top:1px solid var(--line);
   padding:14px 16px calc(14px + var(--sb));}
-.pos-foot .summary{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;}
-.pos-foot .summary .l{font-size:13px;color:var(--t3);}
-.pos-foot .summary .total{font-size:clamp(28px,8vw,36px);font-weight:900;
+.pos-foot .summary{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px;gap:10px;}
+.pos-foot .summary .sum-left{flex:1;min-width:0;}
+.pos-foot .summary-line{display:flex;align-items:baseline;gap:8px;font-size:12.5px;margin-bottom:2px;}
+.pos-foot .summary-line .sl{color:var(--t3);min-width:26px;}
+.pos-foot .summary-line .sv{color:var(--t1);font-weight:700;}
+.pos-foot .summary-line .sv.red{color:var(--red);}
+.pos-foot .summary-line.total-line{margin-top:6px;}
+.pos-foot .summary-line.total-line .sl{font-size:13px;color:var(--t2);}
+.pos-foot .summary .total{font-size:clamp(26px,7vw,34px);font-weight:900;
   color:var(--red);line-height:1;letter-spacing:-1px;}
-.pos-foot .summary .cnt{font-size:13px;color:var(--t3);font-weight:600;}
+.pos-foot .summary .cnt{font-size:12.5px;color:var(--t3);font-weight:600;white-space:nowrap;}
 .pos-foot .actions{display:flex;gap:10px;}
 .pos-foot .actions button{height:56px;border-radius:14px;font-size:16px;font-weight:800;
   display:flex;align-items:center;justify-content:center;gap:6px;}
 .pos-foot .clear-btn{flex:0 0 90px;background:#fdf6f0;color:var(--t2);}
 .pos-foot .pay-btn{flex:1;background:linear-gradient(135deg,#12b76a,#0a9d56);color:#fff;}
 .pos-foot .pay-btn:disabled{background:#ddd;color:#999;}
+
+/* 退货页 */
+.return-view{position:fixed;inset:0;background:#fdf6f0;z-index:300;display:none;flex-direction:column;}
+.return-view.show{display:flex;}
+.return-hdr{flex:0 0 auto;padding:calc(12px + var(--st)) 12px 12px;
+  background:linear-gradient(135deg,#ffd166,#f4a261);color:#5c2c00;
+  display:flex;align-items:center;gap:8px;}
+.return-hdr .back{padding:7px 12px;border-radius:8px;background:rgba(255,255,255,.35);
+  color:#5c2c00;font-size:12px;font-weight:800;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.return-hdr .title{flex:1;font-size:16px;font-weight:800;text-align:center;letter-spacing:.5px;}
+.return-hdr .cam-btn{padding:7px 12px;border-radius:8px;
+  background:linear-gradient(135deg,#4f7cff,#3d6aeb);color:#fff;
+  font-size:12px;font-weight:800;display:flex;align-items:center;gap:4px;
+  box-shadow:0 4px 12px rgba(79,124,255,.4);white-space:nowrap;}
+.return-hdr .cam-btn:active{transform:scale(.96);}
+.return-scan{padding:12px 16px;background:#fff;border-bottom:1px solid var(--line);flex:0 0 auto;}
+.return-scan .sl{font-size:12px;color:var(--t3);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.return-scan input{width:100%;height:52px;background:#fdf6f0;border-radius:14px;
+  text-align:center;font-size:clamp(16px,4.5vw,20px);font-weight:800;letter-spacing:2px;
+  color:var(--red);font-family:"SF Mono",Consolas,monospace;border:2px solid transparent;}
+.return-scan input:focus{background:#fff;border-color:var(--red);}
+.return-scan input.flash{animation:scanFlash2 .5s;border-color:var(--red);}
+@keyframes scanFlash2{0%{background:#ffe0e0;}100%{background:#fdf6f0;}}
+.return-list{flex:1;min-height:0;overflow-y:auto;padding:12px 16px;}
+.return-item{background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:10px;
+  display:flex;align-items:center;gap:12px;}
+.return-item .ri-img{width:56px;height:56px;flex:0 0 56px;border-radius:12px;
+  background:linear-gradient(135deg,#fff0e6,#ffe0d0);display:flex;align-items:center;justify-content:center;font-size:26px;
+  overflow:hidden;}
+.return-item .ri-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.return-item .ri-info{flex:1;min-width:0;}
+.return-item .ri-name{font-size:14px;font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.return-item .ri-price{font-size:12.5px;color:var(--t3);margin-top:3px;}
+.return-item .ri-price b{color:var(--red);font-size:13.5px;}
+.return-item .ri-qty{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+.return-item .ri-qty button{width:30px;height:30px;border-radius:50%;background:#fdf6f0;
+  color:var(--t2);font-size:16px;display:flex;align-items:center;justify-content:center;}
+.return-item .ri-qty .q{font-size:16px;font-weight:800;min-width:26px;text-align:center;}
+.return-item .ri-sub{font-size:15px;font-weight:800;min-width:64px;text-align:right;color:var(--red);}
+.return-foot{flex:0 0 auto;background:#fff;border-top:1px solid var(--line);
+  padding:14px 16px calc(14px + var(--sb));}
+.return-foot .summary{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;}
+.return-foot .summary .l{font-size:13px;color:var(--t3);}
+.return-foot .summary .total{font-size:clamp(26px,7vw,34px);font-weight:900;
+  color:var(--red);line-height:1;letter-spacing:-1px;}
+.return-foot .actions{display:flex;gap:10px;}
+.return-foot .actions button{height:56px;border-radius:14px;font-size:16px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:6px;}
+.return-foot .cancel-btn{flex:0 0 100px;background:#fdf6f0;color:var(--t2);}
+.return-foot .confirm-btn{flex:1;background:linear-gradient(135deg,#ffd166,#f4a261);
+  color:#5c2c00;box-shadow:0 8px 20px rgba(244,162,97,.35);}
+.return-foot .confirm-btn:disabled{background:#ddd;color:#999;box-shadow:none;}
+
+/* 拍照相机 */
+#photoReader{flex:1;position:relative;background:#000;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;}
+#photoReader video{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:88%;aspect-ratio:16/10;border:3px solid #ffd166;border-radius:14px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.55);pointer-events:none;}
+.photo-frame::before{content:'商品图范围';position:absolute;top:-28px;left:0;
+  color:#ffd166;font-size:12px;font-weight:800;}
+.photo-foot{flex:0 0 auto;padding:16px 20px calc(16px + var(--sb));
+  background:rgba(0,0,0,.85);display:flex;justify-content:center;align-items:center;gap:20px;}
+.photo-foot .capture-btn{width:76px;height:76px;border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  border:5px solid rgba(255,255,255,.4);box-shadow:0 0 0 3px rgba(255,255,255,.6);}
+.photo-foot .capture-btn::after{content:'';width:56px;height:56px;border-radius:50%;
+  background:#c1121f;display:block;}
+.photo-foot .capture-btn:active{transform:scale(.94);}
 
 .pay-mask{position:fixed;inset:0;background:rgba(43,31,26,.6);z-index:900;
   display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
@@ -616,15 +751,13 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .qr-show .qrfoot{padding:14px 20px calc(14px + var(--sb));border-top:1px solid var(--line);
   background:#fff;display:flex;gap:8px;}
 .qr-show .qrfoot button{flex:1;min-width:0;height:54px;border-radius:14px;
-  font-size:13px;font-weight:800;letter-spacing:0;
+  font-size:12.5px;font-weight:800;letter-spacing:0;
   display:flex;align-items:center;justify-content:center;gap:3px;
   white-space:nowrap;padding:0 4px;}
 .qr-show .qrfoot .confirm-pay{background:linear-gradient(135deg,#12b76a,#0a9d56);color:#fff;
   box-shadow:0 8px 20px rgba(18,183,106,.35);}
-/* 新增：转到现金支付（黄色） */
 .qr-show .qrfoot .cash-switch{flex:1.45;background:linear-gradient(135deg,#ffd166,#f4a261);
   color:#5c2c00;box-shadow:0 8px 20px rgba(244,162,97,.4);}
-/* 修改：返回收银台改为蓝色（与手机扫码按钮同色） */
 .qr-show .qrfoot .back-pos{background:linear-gradient(135deg,#4f7cff,#3d6aeb);color:#fff;
   box-shadow:0 8px 20px rgba(79,124,255,.35);}
 
@@ -698,11 +831,13 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .camera-tip b{color:#ffd166;}
 
 .staff-result{background:#fff;border-radius:18px;border:1px solid var(--line);padding:18px;margin-bottom:14px;}
-.staff-result .sr-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.staff-result .sr-icon{width:48px;height:48px;flex:0 0 48px;border-radius:12px;
-  background:linear-gradient(135deg,#fdf6f0,#ffe8dd);display:flex;align-items:center;justify-content:center;font-size:24px;}
+.staff-result .sr-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.staff-result .sr-icon{width:60px;height:60px;flex:0 0 60px;border-radius:14px;
+  background:linear-gradient(135deg,#fdf6f0,#ffe8dd);display:flex;align-items:center;justify-content:center;font-size:28px;
+  overflow:hidden;}
+.staff-result .sr-icon img{width:100%;height:100%;object-fit:cover;display:block;}
 .staff-result .sr-title{flex:1;min-width:0;}
-.staff-result .sr-title .n{font-size:16px;font-weight:800;}
+.staff-result .sr-title .n{font-size:16.5px;font-weight:800;}
 .staff-result .sr-title .s{font-size:12px;color:var(--t3);margin-top:4px;}
 .staff-result .sr-stock{display:flex;align-items:center;justify-content:center;gap:14px;
   padding:12px 0;border-top:1px solid #f5f7fc;border-bottom:1px solid #f5f7fc;margin-bottom:14px;}
@@ -828,6 +963,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   display:flex;align-items:center;justify-content:center;gap:6px;}
 .qr-setting .btn-rm{width:100%;height:42px;border-radius:12px;margin-top:8px;
   background:#fff;border:1px solid #fca5a5;color:var(--red);font-size:14px;font-weight:600;}
+.qr-setting .qr-hint{font-size:12px;color:var(--t3);line-height:1.7;margin-top:10px;}
 
 .confirm-mask{position:fixed;inset:0;background:rgba(43,31,26,.6);z-index:960;
   display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);
@@ -992,6 +1128,20 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   </div>
 </div>
 
+<div class="camera-modal" id="photoModal">
+  <div class="camera-head">
+    <div class="ct">📷 拍摄商品图片</div>
+    <button class="close" onclick="stopPhotoCamera()">✕</button>
+  </div>
+  <div id="photoReader">
+    <video id="photoVideo" autoplay playsinline muted></video>
+    <div class="photo-frame"></div>
+  </div>
+  <div class="photo-foot">
+    <button class="capture-btn" onclick="capturePhoto()"></button>
+  </div>
+</div>
+
 <div class="admin-app" id="adminApp">
   <div class="hdr">
     <button class="back" onclick="backToLanding()">←</button>
@@ -1090,6 +1240,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
             <button class="btn-up" onclick="uploadQR('wx')">📷 上传微信收款码</button>
             <button class="btn-rm" onclick="removeQR('wx')">移除</button>
             <input type="file" id="fileWx" accept="image/*" style="display:none" onchange="handleUploadQR(event,'wx')">
+            <div class="qr-hint">建议图片不超过 500KB，尺寸不超过 800×800，超过可能导致保存失败。</div>
           </div>
           <div class="card">
             <h4>💙 支付宝收款码</h4>
@@ -1097,6 +1248,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
             <button class="btn-up" onclick="uploadQR('ali')">📷 上传支付宝收款码</button>
             <button class="btn-rm" onclick="removeQR('ali')">移除</button>
             <input type="file" id="fileAli" accept="image/*" style="display:none" onchange="handleUploadQR(event,'ali')">
+            <div class="qr-hint">建议图片不超过 500KB，尺寸不超过 800×800，超过可能导致保存失败。</div>
           </div>
           <div class="card">
             <h4>🎆 店铺图标</h4>
@@ -1104,9 +1256,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
             <button class="btn-up" onclick="uploadQR('logo')">📷 上传店铺 Logo</button>
             <button class="btn-rm" onclick="removeQR('logo')">移除</button>
             <input type="file" id="fileLogo" accept="image/*" style="display:none" onchange="handleUploadQR(event,'logo')">
-            <div style="font-size:12px;color:var(--t3);line-height:1.7;margin-top:10px;">
-              上传后会显示在首页顶部大图标处，建议 500×500 正方形图片
-            </div>
+            <div class="qr-hint">上传后会显示在首页顶部大图标处，建议 500×500 正方形图片。</div>
           </div>
         </div>
       </div>
@@ -1156,8 +1306,9 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
           <div class="tip-badge">点击上传</div>
         </div>
         <div class="img-actions">
-          <button type="button" class="pick" onclick="pickGoodsImage()">📷 上传图片</button>
-          <button type="button" class="clear" onclick="clearGoodsImage()">移除图片</button>
+          <button type="button" class="pick" onclick="startPhotoCamera()">📷 拍照</button>
+          <button type="button" class="pick" onclick="pickGoodsImage()">🖼️ 相册</button>
+          <button type="button" class="clear" onclick="clearGoodsImage()">移除</button>
         </div>
         <input type="file" id="fImgInput" accept="image/*" style="display:none" onchange="handleGoodsImageUpload(event)">
       </div>
@@ -1214,7 +1365,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
     <div class="inv-search">
       <span class="si">🔍</span>
       <input type="text" id="invSearchInput" placeholder="搜索商品名称…"
-        oninput="renderInvTable()" autocomplete="off">
+        oninput="invPage=1;renderInvTable()" autocomplete="off">
       <button class="clear" onclick="clearInvSearch()">✕</button>
     </div>
     <table class="inv-table">
@@ -1223,6 +1374,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
       </thead>
       <tbody id="invTableBody"></tbody>
     </table>
+    <div class="pager" id="invPager"></div>
   </div>
 </div>
 
@@ -1252,12 +1404,14 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   </div>
   <div class="sheet-body" style="padding:14px 18px;">
     <div class="low-list" id="lowStockList"></div>
+    <div class="pager" id="lowStockPager"></div>
   </div>
 </div>
 
 <div class="pos" id="posView">
   <div class="pos-hdr">
     <button class="back" onclick="backToLanding()">← 返回</button>
+    <button class="pos-return-btn" onclick="openReturn()">↩️ 退货</button>
     <div class="title"><span class="dot"></span>收银台</div>
     <button class="pos-camera-btn" onclick="startCameraScan('pos')">📱 手机扫码</button>
   </div>
@@ -1269,12 +1423,40 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   <div class="pos-list" id="posList"></div>
   <div class="pos-foot">
     <div class="summary">
-      <div><div class="l">合计</div><div class="total" id="posTotal">¥0</div></div>
+      <div class="sum-left">
+        <div class="summary-line"><span class="sl">原价</span><span class="sv" id="posOrig">¥0</span></div>
+        <div class="summary-line" id="posRetLine" style="display:none;"><span class="sl">退货</span><span class="sv red" id="posRetAmt">-¥0</span></div>
+        <div class="summary-line total-line"><span class="sl">现收</span><span class="total" id="posTotal">¥0</span></div>
+      </div>
       <div class="cnt" id="posCount">共 0 件</div>
     </div>
     <div class="actions">
       <button class="clear-btn" onclick="clearPos()">清空</button>
       <button class="pay-btn" id="payBtn" onclick="showPayOptions()" disabled>💳 收款</button>
+    </div>
+  </div>
+</div>
+
+<div class="return-view" id="returnView">
+  <div class="return-hdr">
+    <button class="back" onclick="closeReturn()">← 返回</button>
+    <div class="title">↩️ 退货</div>
+    <button class="cam-btn" onclick="startCameraScan('return')">📱 手机扫码</button>
+  </div>
+  <div class="return-scan">
+    <div class="sl">📷 扫码枪对准下方输入框</div>
+    <input type="text" id="returnInput" placeholder="扫商品码退货…"
+      onkeydown="handleReturnScan(event)" autocomplete="off">
+  </div>
+  <div class="return-list" id="returnList"></div>
+  <div class="return-foot">
+    <div class="summary">
+      <div class="l">退货总额</div>
+      <div class="total" id="returnTotal">¥0</div>
+    </div>
+    <div class="actions">
+      <button class="cancel-btn" onclick="closeReturn()">取消</button>
+      <button class="confirm-btn" id="returnConfirmBtn" onclick="confirmReturn()" disabled>确认退货</button>
     </div>
   </div>
 </div>
@@ -1334,6 +1516,8 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
     <div class="done-card">
       <div class="dc-row"><span class="l">订单号</span><span class="v done-order-code" id="doneOrderCode">A038</span></div>
       <div class="dc-row"><span class="l">商品件数</span><span class="v" id="doneCount">0 件</span></div>
+      <div class="dc-row" id="doneOrigRow" style="display:none;"><span class="l">原价</span><span class="v" id="doneOrig">¥0</span></div>
+      <div class="dc-row" id="doneRetRow" style="display:none;"><span class="l">退货</span><span class="v" style="color:var(--red)" id="doneRet">-¥0</span></div>
       <div class="dc-row total"><span class="l">实收金额</span><span class="v" id="doneAmount">¥0</span></div>
     </div>
     <button class="btn-half primary" style="width:100%;height:56px;font-size:17px;border-radius:14px;"
@@ -1412,7 +1596,15 @@ const LOGO_IMAGE = '';
 
 const SafeStore = {
   get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  set(k,v){
+    try{
+      localStorage.setItem(k, JSON.stringify(v));
+      return true;
+    }catch(e){
+      console.error('存储失败', k, e);
+      return false;
+    }
+  }
 };
 
 let ADMIN_PWD = SafeStore.get('fw_admin_pwd', '123456');
@@ -1460,6 +1652,8 @@ let STAFF_RECENT = SafeStore.get('fw_staff_recent', []);
 let QR_CODES = SafeStore.get('fw_qr_codes', { wx:'', ali:'', logo:'' });
 
 let CART = [];
+let POS_RETURNS = [];     // 已确认的退货记录
+let RETURN_CART = [];     // 退货页正在扫的商品
 let editingCode = null;
 let editingImg = '';
 let currentTab = 'goods';
@@ -1473,10 +1667,15 @@ let movPage = 1;
 let sumPage = 1;
 let staffPage = 1;
 let goodsPage = 1;
+let invPage = 1;
+let lowStockPage = 1;
 const PER_PAGE = 10;
+const MOV_PER_PAGE = 15;
 const SUM_PER_PAGE = 5;
 const STAFF_PER_PAGE = 10;
 const GOODS_PER_PAGE = 10;
+const INV_PER_PAGE = 20;
+const LOW_PER_PAGE = 10;
 
 function toast(msg){
   const t=document.getElementById('toast');
@@ -1486,7 +1685,7 @@ function toast(msg){
 function saveGoodsData(){SafeStore.set('fw_goods',GOODS);}
 function saveOrders(){SafeStore.set('fw_orders',ORDERS);}
 function saveStaffRecent(){SafeStore.set('fw_staff_recent',STAFF_RECENT.slice(0,50));}
-function saveQRCodes(){SafeStore.set('fw_qr_codes',QR_CODES);}
+function saveQRCodes(){return SafeStore.set('fw_qr_codes',QR_CODES);}
 function saveMovements(){SafeStore.set('fw_movements',MOVEMENTS);}
 
 function addMovement(name, code, type, qty){
@@ -1546,7 +1745,7 @@ function doLogin(){
   }
 }
 function backToLanding(){
-  ['adminApp','staffApp','posView','qrShow','doneView','cameraModal'].forEach(id=>{
+  ['adminApp','staffApp','posView','qrShow','doneView','cameraModal','photoModal','returnView'].forEach(id=>{
     document.getElementById(id).classList.remove('show');
   });
   document.getElementById('loginMask').classList.remove('show');
@@ -1560,7 +1759,10 @@ function backToLanding(){
       cameraScanner.clear().catch(()=>{});
     }catch(e){}
   }
+  stopPhotoCamera();
   CART=[];
+  POS_RETURNS=[];
+  RETURN_CART=[];
   document.getElementById('landing').classList.add('show');
 }
 
@@ -1741,6 +1943,7 @@ function executeDelete(){
 
 function openInvStats(){
   document.getElementById('invSearchInput').value='';
+  invPage = 1;
   renderInvTable();
   document.getElementById('invMask').classList.add('show');
   document.getElementById('invSheet').classList.add('show');
@@ -1751,6 +1954,7 @@ function closeInvStats(){
 }
 function clearInvSearch(){
   document.getElementById('invSearchInput').value='';
+  invPage = 1;
   renderInvTable();
 }
 function renderInvTable(){
@@ -1758,14 +1962,22 @@ function renderInvTable(){
   let list=GOODS.slice();
   if(kw) list=list.filter(g=>g.name.toLowerCase().includes(kw) || g.code.toLowerCase().includes(kw));
   const body=document.getElementById('invTableBody');
+  const pager=document.getElementById('invPager');
   if(!list.length){
     body.innerHTML=`<tr><td colspan="4">
       <div class="inv-empty"><div class="ei">📦</div>
       <div class="et">${kw?'没有匹配的商品':'暂无商品'}</div></div>
     </td></tr>`;
+    pager.innerHTML='';
     return;
   }
-  body.innerHTML=list.map(g=>`
+  const total = list.length;
+  const pages = Math.ceil(total / INV_PER_PAGE);
+  if(invPage > pages) invPage = pages;
+  if(invPage < 1) invPage = 1;
+  const start = (invPage-1)*INV_PER_PAGE;
+  const slice = list.slice(start, start + INV_PER_PAGE);
+  body.innerHTML=slice.map(g=>`
     <tr>
       <td>${g.name}</td>
       <td class="num-in">${g.totalIn||0}</td>
@@ -1773,7 +1985,13 @@ function renderInvTable(){
       <td class="num-left">${g.stock}</td>
     </tr>
   `).join('');
+  pager.innerHTML = pages > 1 ? `
+    <button ${invPage<=1?'disabled':''} onclick="invGo(${invPage-1})">上一页</button>
+    <span class="pg-info">${invPage} / ${pages}</span>
+    <button ${invPage>=pages?'disabled':''} onclick="invGo(${invPage+1})">下一页</button>
+  ` : '';
 }
+function invGo(p){ invPage = p; renderInvTable(); }
 
 function openSummary(){
   document.getElementById('sumSearchInput').value='';
@@ -1895,10 +2113,10 @@ function renderMovements(){
     return;
   }
   const total = list.length;
-  const pages = Math.ceil(total / PER_PAGE);
+  const pages = Math.ceil(total / MOV_PER_PAGE);
   if(movPage > pages) movPage = pages;
-  const start = (movPage-1)*PER_PAGE;
-  const slice = list.slice(start, start + PER_PAGE);
+  const start = (movPage-1)*MOV_PER_PAGE;
+  const slice = list.slice(start, start + MOV_PER_PAGE);
   box.innerHTML = slice.map(m=>`
     <div class="mov-item">
       <div class="mi-badge in">入</div>
@@ -1921,32 +2139,52 @@ function movGo(p){
 }
 
 function openLowStock(){
-  const list=GOODS.filter(g=>g.stock<=5).sort((a,b)=>a.stock-b.stock);
-  document.getElementById('lowStockTitle').textContent=
-    list.length ? `⚠️ 库存预警 · ${list.length} 个商品` : '✅ 库存正常';
-  const box=document.getElementById('lowStockList');
-  if(!list.length){
-    box.innerHTML=`<div class="ll-empty"><div class="ei">✅</div>
-      <div class="et">所有商品库存充足</div>
-      <div class="es">没有低于 5 件的商品</div></div>`;
-  } else {
-    box.innerHTML=list.map(g=>{
-      const cls = g.stock<=0?'zero':'warn';
-      return `
-        <div class="ll-item">
-          <div class="ll-icon">${g.icon||'📦'}</div>
-          <div class="ll-info"><div class="ll-name">${g.name}</div>
-            <div class="ll-code">${g.code}</div></div>
-          <div class="ll-stock ${cls}">${g.stock}</div>
-        </div>`;
-    }).join('');
-  }
+  lowStockPage = 1;
+  renderLowStock();
   document.getElementById('lowStockMask').classList.add('show');
   document.getElementById('lowStockSheet').classList.add('show');
 }
 function closeLowStock(){
   document.getElementById('lowStockMask').classList.remove('show');
   document.getElementById('lowStockSheet').classList.remove('show');
+}
+function renderLowStock(){
+  const list=GOODS.filter(g=>g.stock<=5).sort((a,b)=>a.stock-b.stock);
+  document.getElementById('lowStockTitle').textContent=
+    list.length ? `⚠️ 库存预警 · ${list.length} 个商品` : '✅ 库存正常';
+  const box=document.getElementById('lowStockList');
+  const pager=document.getElementById('lowStockPager');
+  if(!list.length){
+    box.innerHTML=`<div class="ll-empty"><div class="ei">✅</div>
+      <div class="et">所有商品库存充足</div>
+      <div class="es">没有低于 5 件的商品</div></div>`;
+    pager.innerHTML='';
+    return;
+  }
+  const total = list.length;
+  const pages = Math.ceil(total / LOW_PER_PAGE);
+  if(lowStockPage > pages) lowStockPage = pages;
+  const start = (lowStockPage-1)*LOW_PER_PAGE;
+  const slice = list.slice(start, start + LOW_PER_PAGE);
+  box.innerHTML=slice.map(g=>{
+    const cls = g.stock<=0?'zero':'warn';
+    return `
+      <div class="ll-item">
+        <div class="ll-icon">${g.img?`<img src="${g.img}">`:(g.icon||'📦')}</div>
+        <div class="ll-info"><div class="ll-name">${g.name}</div>
+          <div class="ll-code">${g.code}</div></div>
+        <div class="ll-stock ${cls}">${g.stock}</div>
+      </div>`;
+  }).join('');
+  pager.innerHTML = pages > 1 ? `
+    <button ${lowStockPage<=1?'disabled':''} onclick="lowStockGo(${lowStockPage-1})">上一页</button>
+    <span class="pg-info">${lowStockPage} / ${pages}</span>
+    <button ${lowStockPage>=pages?'disabled':''} onclick="lowStockGo(${lowStockPage+1})">下一页</button>
+  ` : '';
+}
+function lowStockGo(p){
+  lowStockPage = p;
+  renderLowStock();
 }
 
 function openGoodsForm(code){
@@ -2033,7 +2271,6 @@ function saveGoods(){
   saveGoodsData();renderGoods();renderStats();closeSheet();
 }
 
-/* 视频预览：在新窗口打开视频链接 */
 function openVideoPreview(){
   const url = (document.getElementById('fVideo').value || '').trim();
   if(!url){
@@ -2095,6 +2332,67 @@ function renderGoodsImgPreview(){
   }
 }
 
+/* ========== 商品图片相机（带限定框） ========== */
+let photoStream = null;
+async function startPhotoCamera(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    toast('当前浏览器不支持调用相机，请用相册选择');
+    pickGoodsImage();
+    return;
+  }
+  try{
+    photoStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 800 } },
+      audio: false
+    });
+    const v = document.getElementById('photoVideo');
+    v.srcObject = photoStream;
+    document.getElementById('photoModal').classList.add('show');
+    try{ await v.play(); }catch(e){}
+  }catch(e){
+    console.error(e);
+    toast('相机启动失败，请检查权限，或改用相册');
+  }
+}
+function stopPhotoCamera(){
+  const v = document.getElementById('photoVideo');
+  if(photoStream){
+    photoStream.getTracks().forEach(t => t.stop());
+    photoStream = null;
+  }
+  if(v) v.srcObject = null;
+  document.getElementById('photoModal').classList.remove('show');
+}
+function capturePhoto(){
+  const v = document.getElementById('photoVideo');
+  if(!v || !v.videoWidth){
+    toast('相机还没准备好，请稍等');
+    return;
+  }
+  const vw = v.videoWidth, vh = v.videoHeight;
+  const ratio = 16/10; // 与商品图预览框一致
+  let cw, ch;
+  if(vw / vh > ratio){ ch = vh; cw = vh * ratio; }
+  else { cw = vw; ch = vw / ratio; }
+  const cx = (vw - cw) / 2;
+  const cy = (vh - ch) / 2;
+
+  const maxSize = 900;
+  let outW = cw, outH = ch;
+  if(outW > maxSize){ outH = outH * maxSize / outW; outW = maxSize; }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(outW);
+  canvas.height = Math.round(outH);
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(v, cx, cy, cw, ch, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+  editingImg = dataUrl;
+  renderGoodsImgPreview();
+  stopPhotoCamera();
+  toast('照片已拍摄');
+}
+
 function initStaff(){
   const now=new Date();
   document.getElementById('staffDate').textContent=
@@ -2127,7 +2425,7 @@ function showStaffResult(g){
   document.getElementById('staffResult').innerHTML=`
     <div class="staff-result">
       <div class="sr-head">
-        <div class="sr-icon">${g.icon||'📦'}</div>
+        <div class="sr-icon">${g.img?`<img src="${g.img}">`:(g.icon||'📦')}</div>
         <div class="sr-title">
           <div class="n">${g.name}</div>
           <div class="s">${g.category||'未分类'}</div>
@@ -2215,7 +2513,7 @@ function staffStock(code,n){
     </div>
     <div class="staff-result">
       <div class="sr-head">
-        <div class="sr-icon">${g.icon||'📦'}</div>
+        <div class="sr-icon">${g.img?`<img src="${g.img}">`:(g.icon||'📦')}</div>
         <div class="sr-title">
           <div class="n">${g.name}</div>
           <div class="s">${g.category||'未分类'}</div>
@@ -2311,6 +2609,9 @@ function startCameraScan(mode){
               toast('已录入二维码：' + code);
             } else if(cameraMode === 'pos'){
               handlePosCode(code);
+            } else if(cameraMode === 'return'){
+              addReturnItem(code);
+              focusReturnInput();
             } else {
               handleStaffCode(code);
             }
@@ -2343,7 +2644,7 @@ function handlePosCode(code){
   if(!g){ toast('未找到商品：'+code); return; }
   const item = CART.find(x=>x.code===code);
   if(item) item.qty++;
-  else CART.push({code:g.code, name:g.name, price:g.suggestPrice, icon:g.icon, qty:1});
+  else CART.push({code:g.code, name:g.name, price:g.suggestPrice, icon:g.icon, img:g.img||'', qty:1});
   renderPos();
   focusPosInput();
   toast('已加入购物车：'+g.name);
@@ -2384,12 +2685,14 @@ function renderOrders(){
   wrap.innerHTML=slice.map(o=>{
     const st=STATUS[o.status];
     const goodsText=o.goods.map(g=>`${g.name}×${g.qty}`).join('、');
+    const retText = (o.returns && o.returns.length)
+      ? o.returns.map(r=>`${r.name}×${r.qty}`).join('、') : '';
     return `
       <div class="ocard" id="oc-${o.code}">
         <div class="oc-head" onclick="toggleOrder('${o.code}')">
           <div class="oc-code">${o.code}</div>
           <div class="oc-mid">
-            <div class="n">${o.name} · ${goodsText}</div>
+            <div class="n">${o.name} · ${goodsText}${retText?` (退:${retText})`:''}</div>
             <div class="p">${o.phone||'现场客户'} · ${o.time}</div>
           </div>
           <div class="oc-right">
@@ -2404,7 +2707,16 @@ function renderOrders(){
                 <span>${g.name}</span>
                 <span>${g.qty}件 × ¥${g.price} = ¥${g.qty*g.price}</span>
               </div>`).join('')}
-              <div class="od-good total"><span>合计</span>
+              ${(o.returns&&o.returns.length)?`
+                <div class="od-good" style="background:#fff5f5;color:var(--red);font-weight:700;">
+                  <span>退货</span><span>${o.returns.reduce((s,r)=>s+r.qty,0)}件</span>
+                </div>
+                ${o.returns.map(r=>`<div class="od-good" style="color:var(--red);">
+                  <span>↩️ ${r.name}</span>
+                  <span>-${r.qty}件 × ¥${r.price} = -¥${r.qty*r.price}</span>
+                </div>`).join('')}
+              `:''}
+              <div class="od-good total"><span>实收</span>
                 <span>¥${o.amount.toLocaleString()}</span></div>
             </div>
           </div>
@@ -2457,7 +2769,7 @@ function handleUploadQR(e, type){
   reader.onload=function(ev){
     const img=new Image();
     img.onload=function(){
-      const maxSize = (type==='logo') ? 400 : 600;
+      const maxSize = (type==='logo') ? 300 : 500;
       let w=img.width, h=img.height;
       if(w>maxSize || h>maxSize){
         if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}
@@ -2465,10 +2777,21 @@ function handleUploadQR(e, type){
       }
       const canvas=document.createElement('canvas');
       canvas.width=w;canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      const dataUrl=canvas.toDataURL('image/jpeg',0.85);
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle='#ffffff';
+      ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img,0,0,w,h);
+      const dataUrl=canvas.toDataURL('image/jpeg',0.8);
+
+      const old = QR_CODES[type];
       QR_CODES[type]=dataUrl;
-      saveQRCodes();renderQRSettings();
+      if(!saveQRCodes()){
+        QR_CODES[type] = old;
+        toast('保存失败：存储空间不足，请先移除一些商品图片，或换更小的收款码');
+        renderQRSettings();
+        return;
+      }
+      renderQRSettings();
       if(type==='logo') document.getElementById('logoBox').innerHTML=`<img src="${dataUrl}">`;
       toast(type==='logo'?'店铺图标已保存':'收款码已保存');
     };
@@ -2490,7 +2813,11 @@ function enterPos(){
     document.getElementById(id).classList.remove('show');
   });
   document.getElementById('posView').classList.add('show');
-  CART=[];renderPos();focusPosInput();
+  CART=[];
+  POS_RETURNS=[];
+  RETURN_CART=[];
+  renderPos();
+  focusPosInput();
 }
 function focusPosInput(){
   setTimeout(()=>{
@@ -2511,40 +2838,75 @@ function handlePosScan(e){
   if(!g){toast('未找到商品：'+code);focusPosInput();return;}
   const item=CART.find(x=>x.code===code);
   if(item)item.qty++;
-  else CART.push({code:g.code,name:g.name,price:g.suggestPrice,icon:g.icon,qty:1});
+  else CART.push({code:g.code,name:g.name,price:g.suggestPrice,icon:g.icon,img:g.img||'',qty:1});
   renderPos();focusPosInput();
 }
 function renderPos(){
   const list=document.getElementById('posList');
-  if(!CART.length){
+  const hasCart = CART.length > 0;
+  const hasRet = POS_RETURNS.length > 0;
+
+  if(!hasCart && !hasRet){
     list.innerHTML=`<div class="pos-empty">
       <div class="ei">🛒</div><div class="et">购物车是空的</div>
       <div class="es">扫码枪扫商品二维码开始收银</div></div>`;
-    document.getElementById('posTotal').textContent='¥0';
-    document.getElementById('posCount').textContent='共 0 件';
-    document.getElementById('payBtn').disabled=true;
+    updatePosSummary();
     return;
   }
-  list.innerHTML=CART.map(item=>`
-    <div class="pos-item">
-      <div class="pi-icon">${item.icon}</div>
-      <div class="pi-info">
-        <div class="pi-name">${item.name}</div>
-        <div class="pi-price">¥<b>${item.price}</b> / 件</div>
+  let html = '';
+  if(hasCart){
+    html += CART.map(item=>`
+      <div class="pos-item">
+        <div class="pi-icon">${item.img?`<img src="${item.img}">`:item.icon}</div>
+        <div class="pi-info">
+          <div class="pi-name">${item.name}</div>
+          <div class="pi-price">¥<b>${item.price}</b> / 件</div>
+        </div>
+        <div class="pi-qty">
+          <button onclick="changePosQty('${item.code}',-1)">−</button>
+          <span class="q">${item.qty}</span>
+          <button onclick="changePosQty('${item.code}',1)">+</button>
+        </div>
+        <div class="pi-sub">¥${(item.price*item.qty).toLocaleString()}</div>
       </div>
-      <div class="pi-qty">
-        <button onclick="changePosQty('${item.code}',-1)">−</button>
-        <span class="q">${item.qty}</span>
-        <button onclick="changePosQty('${item.code}',1)">+</button>
-      </div>
-      <div class="pi-sub">¥${(item.price*item.qty).toLocaleString()}</div>
-    </div>
-  `).join('');
-  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
-  const count=CART.reduce((s,i)=>s+i.qty,0);
-  document.getElementById('posTotal').textContent='¥'+total.toLocaleString();
-  document.getElementById('posCount').textContent='共 '+count+' 件';
-  document.getElementById('payBtn').disabled=false;
+    `).join('');
+  }
+  if(hasRet){
+    html += `<div class="pos-ret-section">
+      <div class="prs-title">↩️ 已退货</div>
+      ${POS_RETURNS.map(r=>`
+        <div class="pos-ret-item">
+          <div class="pri-icon">${r.img?`<img src="${r.img}">`:r.icon}</div>
+          <div class="pri-info">
+            <div class="pri-name">${r.name}</div>
+            <div class="pri-price">¥${r.price} / 件</div>
+          </div>
+          <div class="pri-qty">-${r.qty}</div>
+          <div class="pri-sub">-¥${(r.price*r.qty).toLocaleString()}</div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+  list.innerHTML = html;
+  updatePosSummary();
+}
+function updatePosSummary(){
+  const orig = CART.reduce((s,i)=>s+i.price*i.qty,0);
+  const ret = POS_RETURNS.reduce((s,r)=>s+r.price*r.qty,0);
+  const net = Math.max(0, orig - ret);
+  const count = CART.reduce((s,i)=>s+i.qty,0);
+
+  document.getElementById('posOrig').textContent = '¥' + orig.toLocaleString();
+  const retLine = document.getElementById('posRetLine');
+  if(ret > 0){
+    retLine.style.display = 'flex';
+    document.getElementById('posRetAmt').textContent = '-¥' + ret.toLocaleString();
+  } else {
+    retLine.style.display = 'none';
+  }
+  document.getElementById('posTotal').textContent = '¥' + net.toLocaleString();
+  document.getElementById('posCount').textContent = '共 ' + count + ' 件';
+  document.getElementById('payBtn').disabled = (net <= 0 || CART.length === 0);
 }
 function changePosQty(code,d){
   const item=CART.find(x=>x.code===code);if(!item)return;
@@ -2553,14 +2915,112 @@ function changePosQty(code,d){
   renderPos();focusPosInput();
 }
 function clearPos(){
-  if(!CART.length)return;
+  if(!CART.length && !POS_RETURNS.length)return;
   if(!confirm('确定清空当前收银吗？'))return;
-  CART=[];renderPos();focusPosInput();
+  CART=[];
+  POS_RETURNS=[];
+  RETURN_CART=[];
+  renderPos();focusPosInput();
 }
+
+/* ========== 退货页 ========== */
+function openReturn(){
+  if(!CART.length){
+    toast('购物车是空的，没有可退货的商品');
+    return;
+  }
+  RETURN_CART = [];
+  renderReturnCart();
+  document.getElementById('returnView').classList.add('show');
+  focusReturnInput();
+}
+function closeReturn(){
+  document.getElementById('returnView').classList.remove('show');
+  RETURN_CART = [];
+  focusPosInput();
+}
+function focusReturnInput(){
+  setTimeout(()=>{
+    const el=document.getElementById('returnInput');
+    if(el)el.focus();
+  },100);
+}
+function handleReturnScan(e){
+  if(e.key!=='Enter')return;
+  const code=e.target.value.trim();e.target.value='';
+  if(!code)return;
+  e.target.classList.remove('flash');
+  void e.target.offsetWidth;
+  e.target.classList.add('flash');
+  if(code===lastScan && Date.now()-lastScanTime<800)return;
+  lastScan=code;lastScanTime=Date.now();
+  addReturnItem(code);
+  focusReturnInput();
+}
+function addReturnItem(code){
+  const g = GOODS.find(x=>x.code===code);
+  if(!g){ toast('未找到商品：'+code); return; }
+  const item = RETURN_CART.find(x=>x.code===code);
+  if(item) item.qty++;
+  else RETURN_CART.push({code:g.code,name:g.name,price:g.suggestPrice,icon:g.icon,img:g.img||'',qty:1});
+  renderReturnCart();
+}
+function changeReturnQty(code,d){
+  const item=RETURN_CART.find(x=>x.code===code);if(!item)return;
+  item.qty+=d;
+  if(item.qty<=0)RETURN_CART=RETURN_CART.filter(x=>x.code!==code);
+  renderReturnCart();
+}
+function renderReturnCart(){
+  const list=document.getElementById('returnList');
+  if(!RETURN_CART.length){
+    list.innerHTML=`<div class="pos-empty">
+      <div class="ei">↩️</div><div class="et">还没有退货商品</div>
+      <div class="es">扫码枪扫商品二维码开始退货</div></div>`;
+  } else {
+    list.innerHTML = RETURN_CART.map(item=>`
+      <div class="return-item">
+        <div class="ri-img">${item.img?`<img src="${item.img}">`:item.icon}</div>
+        <div class="ri-info">
+          <div class="ri-name">${item.name}</div>
+          <div class="ri-price">¥<b>${item.price}</b> / 件</div>
+        </div>
+        <div class="ri-qty">
+          <button onclick="changeReturnQty('${item.code}',-1)">−</button>
+          <span class="q">${item.qty}</span>
+          <button onclick="changeReturnQty('${item.code}',1)">+</button>
+        </div>
+        <div class="ri-sub">-¥${(item.price*item.qty).toLocaleString()}</div>
+      </div>
+    `).join('');
+  }
+  const total = RETURN_CART.reduce((s,i)=>s+i.price*i.qty,0);
+  document.getElementById('returnTotal').textContent = '¥' + total.toLocaleString();
+  document.getElementById('returnConfirmBtn').disabled = RETURN_CART.length === 0;
+}
+function confirmReturn(){
+  if(!RETURN_CART.length){ toast('请先扫码添加退货商品'); return; }
+  RETURN_CART.forEach(r=>{
+    const item = CART.find(x=>x.code===r.code);
+    if(item){
+      item.qty -= r.qty;
+      if(item.qty <= 0) CART = CART.filter(x=>x.code!==r.code);
+    }
+    const ex = POS_RETURNS.find(x=>x.code===r.code);
+    if(ex) ex.qty += r.qty;
+    else POS_RETURNS.push({code:r.code,name:r.name,price:r.price,icon:r.icon,img:r.img,qty:r.qty});
+  });
+  const retCount = RETURN_CART.reduce((s,i)=>s+i.qty,0);
+  RETURN_CART = [];
+  closeReturn();
+  renderPos();
+  toast('退货成功，共退 ' + retCount + ' 件');
+}
+
 function showPayOptions(){
-  if(!CART.length)return;
-  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
-  document.getElementById('payAmt').textContent='¥'+total.toLocaleString();
+  const net = Math.max(0, CART.reduce((s,i)=>s+i.price*i.qty,0) - POS_RETURNS.reduce((s,r)=>s+r.price*r.qty,0));
+  if(net <= 0){ toast('没有可收款金额'); return; }
+  document.getElementById('payAmt').textContent='¥'+net.toLocaleString();
   document.getElementById('payMask').classList.add('show');
 }
 function closePayOptions(){
@@ -2573,8 +3033,8 @@ function payCash(){
 }
 function payOnline(){
   closePayOptions();
-  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
-  document.getElementById('qrShowAmt').textContent='¥'+total.toLocaleString();
+  const net = Math.max(0, CART.reduce((s,i)=>s+i.price*i.qty,0) - POS_RETURNS.reduce((s,r)=>s+r.price*r.qty,0));
+  document.getElementById('qrShowAmt').textContent='¥'+net.toLocaleString();
   const boxWx=document.getElementById('qrBoxWx');
   const noWx=document.getElementById('noWx');
   if(QR_CODES.wx){
@@ -2597,26 +3057,17 @@ function payOnline(){
 }
 function closeQrShow(){
   document.getElementById('qrShow').classList.remove('show');
-  CART=[];
-  renderPos();
   focusPosInput();
 }
 function backFromQr(){
   document.getElementById('qrShow').classList.remove('show');
-  CART=[];
-  renderPos();
   focusPosInput();
 }
-/* 新增：从扫码付款页转到现金支付（保留购物车，退回结算画面） */
 function switchToCashPay(){
   document.getElementById('qrShow').classList.remove('show');
-  if(!CART.length){
-    renderPos();
-    focusPosInput();
-    return;
-  }
-  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
-  document.getElementById('payAmt').textContent='¥'+total.toLocaleString();
+  const net = Math.max(0, CART.reduce((s,i)=>s+i.price*i.qty,0) - POS_RETURNS.reduce((s,r)=>s+r.price*r.qty,0));
+  if(net <= 0){ toast('没有可收款金额'); focusPosInput(); return; }
+  document.getElementById('payAmt').textContent='¥'+net.toLocaleString();
   document.getElementById('payMask').classList.add('show');
 }
 function confirmPaid(){
@@ -2625,8 +3076,10 @@ function confirmPaid(){
 }
 function completeOrder(payMethod){
   if(!CART.length)return;
-  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
-  const count=CART.reduce((s,i)=>s+i.qty,0);
+  const orig = CART.reduce((s,i)=>s+i.price*i.qty,0);
+  const ret = POS_RETURNS.reduce((s,r)=>s+r.price*r.qty,0);
+  const total = Math.max(0, orig - ret);
+  const count = CART.reduce((s,i)=>s+i.qty,0);
   const maxNum=ORDERS.reduce((m,o)=>{
     const n=parseInt((o.code||'').slice(1));return isNaN(n)?m:Math.max(m,n);
   },0);
@@ -2636,6 +3089,8 @@ function completeOrder(payMethod){
   const timeStr=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   const order={code,name:'现场客户',phone:'',amount:total,status:'done',
     method:'自提',time:timeStr,remark:'现场收银·'+payMethod,
+    origAmount: orig,
+    returns: POS_RETURNS.length ? POS_RETURNS.map(r=>({name:r.name,qty:r.qty,price:r.price})) : [],
     goods:CART.map(i=>({name:i.name,qty:i.qty,price:i.price}))};
   ORDERS.unshift(order);saveOrders();
   CART.forEach(i=>{
@@ -2647,15 +3102,34 @@ function completeOrder(payMethod){
       addMovement(g.name, g.code, 'out', i.qty);
     }
   });
+  POS_RETURNS.forEach(r=>{
+    const g=GOODS.find(x=>x.code===r.code);
+    if(g){
+      g.stock+=r.qty;
+      g.totalIn=(g.totalIn||0)+r.qty;
+    }
+  });
   saveGoodsData();
   document.getElementById('doneSub').textContent=`已通过${payMethod}收款，订单已生成`;
   document.getElementById('doneOrderCode').textContent=code;
   document.getElementById('doneCount').textContent=count+' 件';
+  if(ret > 0){
+    document.getElementById('doneOrigRow').style.display='flex';
+    document.getElementById('doneRetRow').style.display='flex';
+    document.getElementById('doneOrig').textContent='¥'+orig.toLocaleString();
+    document.getElementById('doneRet').textContent='-¥'+ret.toLocaleString();
+  } else {
+    document.getElementById('doneOrigRow').style.display='none';
+    document.getElementById('doneRetRow').style.display='none';
+  }
   document.getElementById('doneAmount').textContent='¥'+total.toLocaleString();
   document.getElementById('doneView').classList.add('show');
+  POS_RETURNS=[];
 }
 function backToPos(){
   CART=[];
+  POS_RETURNS=[];
+  RETURN_CART=[];
   document.getElementById('doneView').classList.remove('show');
   renderPos();focusPosInput();
 }
@@ -2665,8 +3139,12 @@ document.addEventListener('click',e=>{
      !document.getElementById('qrShow').classList.contains('show')&&
      !document.getElementById('doneView').classList.contains('show')&&
      !document.getElementById('payMask').classList.contains('show')&&
-     !document.getElementById('cameraModal').classList.contains('show')){
+     !document.getElementById('cameraModal').classList.contains('show')&&
+     !document.getElementById('returnView').classList.contains('show')){
     if(!e.target.closest('input,button'))focusPosInput();
+  }
+  if(document.getElementById('returnView').classList.contains('show')){
+    if(!e.target.closest('input,button'))focusReturnInput();
   }
   if(document.getElementById('staffApp').classList.contains('show')){
     if(document.getElementById('confirmMask').classList.contains('show'))return;
