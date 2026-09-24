@@ -815,7 +815,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   background:rgba(255,255,255,.15);color:#fff;font-size:20px;
   display:flex;align-items:center;justify-content:center;}
 .camera-head .close:active{background:rgba(255,255,255,.28);}
-/* 闪光灯按钮 */
 .camera-head .cam-actions{display:flex;align-items:center;gap:8px;}
 .camera-head .torch-btn{width:38px;height:38px;border-radius:50%;
   background:rgba(255,255,255,.15);color:#fff;font-size:18px;
@@ -1263,6 +1262,14 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
             <input type="file" id="fileLogo" accept="image/*" style="display:none" onchange="handleUploadQR(event,'logo')">
             <div class="qr-hint">上传后会显示在首页顶部大图标处，建议 500×500 正方形图片。</div>
           </div>
+          <div class="card">
+            <h4>💬 商家微信二维码</h4>
+            <div class="preview" id="previewWxAdd">💬</div>
+            <button class="btn-up" onclick="uploadQR('wxAdd')">📷 上传商家微信二维码</button>
+            <button class="btn-rm" onclick="removeQR('wxAdd')">移除</button>
+            <input type="file" id="fileWxAdd" accept="image/*" style="display:none" onchange="handleUploadQR(event,'wxAdd')">
+            <div class="qr-hint">显示在客户端首页广告页，顾客长按识别可加微信。建议尺寸不超过 800×800。</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1599,7 +1606,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 <script>
 const LOGO_IMAGE = '';
 
-/* ========== 音效引擎（Web Audio 合成，不依赖外部音频文件） ========== */
+/* ========== 音效引擎 ========== */
 const SFX = (function(){
   let ctx = null;
   function getCtx(){
@@ -1732,7 +1739,8 @@ let ORDERS = SafeStore.get('fw_orders', null) || [
 let MOVEMENTS = SafeStore.get('fw_movements', []);
 let STAFF_RECENT = SafeStore.get('fw_staff_recent', []);
 let STAFF_LAST_SUCCESS = SafeStore.get('fw_staff_last_success', null);
-let QR_CODES = SafeStore.get('fw_qr_codes', { wx:'', ali:'', logo:'' });
+/* 新增 wxAdd 字段（商家微信二维码） */
+let QR_CODES = SafeStore.get('fw_qr_codes', { wx:'', ali:'', logo:'', wxAdd:'' });
 
 let CART = [];
 let POS_RETURNS = [];
@@ -2533,9 +2541,7 @@ function initStaff(){
   document.getElementById('staffDate').textContent=
     `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
   staffPage=1;
-  // 上次扫码的表单清空，必须等再次扫码才显示
   document.getElementById('staffResult').innerHTML='';
-  // 恢复上次成功提示（如果是今天）
   renderStaffSuccess();
   renderStaffRecent();focusStaff();
 }
@@ -2566,7 +2572,6 @@ function handleStaffCode(code){
   }
 }
 function showStaffResult(g){
-  // 清掉上次的成功提示，避免和当前表单叠加
   document.getElementById('staffSuccess').innerHTML = '';
   const sc=g.stock<=0?'red':(g.stock<=5?'':'green');
   document.getElementById('staffResult').innerHTML=`
@@ -2643,23 +2648,16 @@ function staffStock(code,n){
   const now=new Date();
   const pad=x=>String(x).padStart(2,'0');
   const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-  STAFF_RECENT.unshift({
-    name:g.name, delta:n, time:timeStr
-  });
+  STAFF_RECENT.unshift({ name:g.name, delta:n, time:timeStr });
   saveStaffRecent();
   staffPage=1;
 
-  // 记录“最后一次成功操作”，用于重进页面时显示提示
   STAFF_LAST_SUCCESS = {
-    name: g.name,
-    delta: n,
-    stock: g.stock,
-    time: timeStr,
-    date: todayStr()
+    name: g.name, delta: n, stock: g.stock,
+    time: timeStr, date: todayStr()
   };
   SafeStore.set('fw_staff_last_success', STAFF_LAST_SUCCESS);
 
-  // 只显示成功提示，不再显示商品表单
   renderStaffSuccess();
   document.getElementById('staffResult').innerHTML = '';
 
@@ -2715,7 +2713,6 @@ function startCameraScan(mode){
     return;
   }
   document.getElementById('cameraModal').classList.add('show');
-  // 重置闪光灯状态
   torchOn = false;
   const tb = document.getElementById('torchBtn');
   if(tb) tb.classList.remove('on');
@@ -2736,10 +2733,7 @@ function startCameraScan(mode){
             if(!code) return;
             if(cameraMode === 'form'){
               const inp = document.getElementById('fCode');
-              if(inp){
-                inp.value = code;
-                inp.focus();
-              }
+              if(inp){ inp.value = code; inp.focus(); }
               SFX.scan();
               toast('已录入二维码：' + code);
             } else if(cameraMode === 'pos'){
@@ -2765,7 +2759,6 @@ function startCameraScan(mode){
 }
 async function stopCameraScan(){
   document.getElementById('cameraModal').classList.remove('show');
-  // 关闭闪光灯 UI 状态
   torchOn = false;
   const tb = document.getElementById('torchBtn');
   if(tb) tb.classList.remove('on');
@@ -2778,20 +2771,14 @@ async function stopCameraScan(){
   }
 }
 
-/* 闪光灯开关 */
 async function toggleTorch(){
   try{
     const video = document.querySelector('#cameraReader video');
-    if(!video || !video.srcObject){
-      toast('相机未就绪'); return;
-    }
+    if(!video || !video.srcObject){ toast('相机未就绪'); return; }
     const track = video.srcObject.getVideoTracks()[0];
     if(!track){ toast('相机未就绪'); return; }
     const caps = track.getCapabilities ? track.getCapabilities() : {};
-    if(!caps.torch){
-      toast('此设备或浏览器不支持闪光灯');
-      return;
-    }
+    if(!caps.torch){ toast('此设备或浏览器不支持闪光灯'); return; }
     const next = !torchOn;
     await track.applyConstraints({ advanced: [{ torch: next }] });
     torchOn = next;
@@ -2803,7 +2790,6 @@ async function toggleTorch(){
   }
 }
 
-/* 点击取景框触发重新对焦 */
 async function triggerAutoFocus(){
   try{
     const video = document.querySelector('#cameraReader video');
@@ -2916,10 +2902,7 @@ function renderOrders(){
     <button ${orderPage>=pages?'disabled':''} onclick="orderGo(${orderPage+1})">下一页</button>
   `;
 }
-function orderGo(p){
-  orderPage=p;
-  renderOrders();
-}
+function orderGo(p){ orderPage=p; renderOrders(); }
 function pickOrderTab(k){orderFilter=k;orderPage=1;renderOrders();}
 function toggleOrder(code){document.getElementById('oc-'+code).classList.toggle('open');}
 function changeStatus(code,status){
@@ -2930,6 +2913,7 @@ function changeStatus(code,status){
   toast(map[status]||'已更新');
 }
 
+/* ========== 收款码 & 图标设置 ========== */
 function renderQRSettings(){
   const pw=document.getElementById('previewWx');
   pw.innerHTML = QR_CODES.wx ? `<img src="${QR_CODES.wx}">` : '💚';
@@ -2937,10 +2921,15 @@ function renderQRSettings(){
   pa.innerHTML = QR_CODES.ali ? `<img src="${QR_CODES.ali}">` : '💙';
   const pl=document.getElementById('previewLogo');
   pl.innerHTML = QR_CODES.logo ? `<img src="${QR_CODES.logo}">` : '🎆';
+  /* 新增：商家微信二维码预览 */
+  const pwa=document.getElementById('previewWxAdd');
+  if(pwa) pwa.innerHTML = QR_CODES.wxAdd ? `<img src="${QR_CODES.wxAdd}">` : '💬';
 }
 function uploadQR(type){
-  const map={wx:'fileWx',ali:'fileAli',logo:'fileLogo'};
-  document.getElementById(map[type]).click();
+  /* map 新增 wxAdd */
+  const map={wx:'fileWx',ali:'fileAli',logo:'fileLogo',wxAdd:'fileWxAdd'};
+  const el = document.getElementById(map[type]);
+  if(el) el.click();
 }
 function handleUploadQR(e, type){
   const file=e.target.files[0];
@@ -2976,7 +2965,9 @@ function handleUploadQR(e, type){
       renderQRSettings();
       if(type==='logo') document.getElementById('logoBox').innerHTML=`<img src="${dataUrl}">`;
       SFX.success();
-      toast(type==='logo'?'店铺图标已保存':'收款码已保存');
+      if(type==='logo') toast('店铺图标已保存');
+      else if(type==='wxAdd') toast('商家微信二维码已保存');
+      else toast('收款码已保存');
     };
     img.src=ev.target.result;
   };
@@ -2991,6 +2982,7 @@ function removeQR(type){
   toast('已移除');
 }
 
+/* ========== 收银台 ========== */
 function enterPos(){
   ['landing','adminApp','staffApp'].forEach(id=>{
     document.getElementById(id).classList.remove('show');
@@ -3107,7 +3099,7 @@ function clearPos(){
   renderPos();focusPosInput();
 }
 
-/* ========== 退货页 ========== */
+/* ========== 退货 ========== */
 function openReturn(){
   if(!CART.length){
     toast('购物车是空的，没有可退货的商品');
@@ -3340,7 +3332,7 @@ document.addEventListener('click',e=>{
   }
 });
 
-/* 全局按钮音效：所有按钮统一轻点"哒"（与"管理员密码"按钮一致） */
+/* 全局按钮音效 */
 document.addEventListener('click', function(e){
   const btn = e.target.closest('button, .entry-btn, .side-item, .atab, .otab, .gcard .gc-actions button, .warn-btn, .staff-camera-btn, .pos-camera-btn, .pos-return-btn, .cash-switch, .confirm-pay, .back-pos, .btn-up, .btn-rm, .mh-btn, .btn-half, .scan-btn, .video-preview-btn, .capture-btn');
   if(!btn) return;
@@ -3348,13 +3340,9 @@ document.addEventListener('click', function(e){
   SFX.click();
 }, true);
 
-/* 点击取景框触发自动对焦 */
 document.addEventListener('click', function(e){
-  if(e.target.closest('#cameraReader')){
-    triggerAutoFocus();
-  }
+  if(e.target.closest('#cameraReader')){ triggerAutoFocus(); }
 });
-
 </script>
 </body>
 </html>
