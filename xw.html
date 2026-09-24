@@ -614,13 +614,19 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .qr-show .qr-item .imgbox .ph{font-size:44px;opacity:.3;}
 .qr-show .qr-item .no-qr{font-size:12.5px;color:var(--t3);margin-top:10px;line-height:1.6;}
 .qr-show .qrfoot{padding:14px 20px calc(14px + var(--sb));border-top:1px solid var(--line);
-  background:#fff;display:flex;gap:10px;}
-.qr-show .qrfoot button{flex:1;height:54px;border-radius:14px;
-  font-size:15px;font-weight:800;letter-spacing:.5px;
-  display:flex;align-items:center;justify-content:center;}
+  background:#fff;display:flex;gap:8px;}
+.qr-show .qrfoot button{flex:1;min-width:0;height:54px;border-radius:14px;
+  font-size:13px;font-weight:800;letter-spacing:0;
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  white-space:nowrap;padding:0 4px;}
 .qr-show .qrfoot .confirm-pay{background:linear-gradient(135deg,#12b76a,#0a9d56);color:#fff;
   box-shadow:0 8px 20px rgba(18,183,106,.35);}
-.qr-show .qrfoot .back-pos{background:#fdf6f0;color:var(--t2);border:1.5px solid var(--line);}
+/* 新增：转到现金支付（黄色） */
+.qr-show .qrfoot .cash-switch{flex:1.45;background:linear-gradient(135deg,#ffd166,#f4a261);
+  color:#5c2c00;box-shadow:0 8px 20px rgba(244,162,97,.4);}
+/* 修改：返回收银台改为蓝色（与手机扫码按钮同色） */
+.qr-show .qrfoot .back-pos{background:linear-gradient(135deg,#4f7cff,#3d6aeb);color:#fff;
+  box-shadow:0 8px 20px rgba(79,124,255,.35);}
 
 .done{position:fixed;inset:0;background:#fff;z-index:860;display:none;flex-direction:column;}
 .done.show{display:flex;}
@@ -1315,6 +1321,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   </div>
   <div class="qrfoot">
     <button class="confirm-pay" onclick="confirmPaid()">确认收款</button>
+    <button class="cash-switch" onclick="switchToCashPay()">💵 转到现金支付</button>
     <button class="back-pos" onclick="backFromQr()">返回收银台</button>
   </div>
 </div>
@@ -2599,6 +2606,18 @@ function backFromQr(){
   CART=[];
   renderPos();
   focusPosInput();
+}
+/* 新增：从扫码付款页转到现金支付（保留购物车，退回结算画面） */
+function switchToCashPay(){
+  document.getElementById('qrShow').classList.remove('show');
+  if(!CART.length){
+    renderPos();
+    focusPosInput();
+    return;
+  }
+  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
+  document.getElementById('payAmt').textContent='¥'+total.toLocaleString();
+  document.getElementById('payMask').classList.add('show');
 }
 function confirmPaid(){
   document.getElementById('qrShow').classList.remove('show');
