@@ -1,0 +1,2273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#c1121f">
+<title>喜旺烟花 · 在线选购</title>
+<style>
+:root{
+  --red:#c1121f;--red-l:#e63946;--red-d:#8b0d15;
+  --gold:#f4a261;--gold-l:#ffd166;--gold-d:#d97706;--orange:#f97316;
+  --green:#12b76a;--green-d:#0a9d56;--blue:#4f7cff;
+  --bg:#fdf6f0;--line:#f0e0d5;
+  --t1:#2b1f1a;--t2:#6b5a52;--t3:#a8968c;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;min-height:100%;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--t1);font-size:14px;
+  overflow:hidden;-webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,select,textarea{font-family:inherit;outline:none;border:none;background:none;color:inherit;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-thumb{background:rgba(120,130,155,.28);border-radius:3px;}
+
+.shop-app{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  background:var(--bg);z-index:10;
+}
+.shop-page{
+  position:absolute;inset:0;
+  display:none;flex-direction:column;
+  background:var(--bg);
+}
+.shop-page.show{display:flex;}
+
+/* ============================================================
+   广告页
+   ============================================================ */
+#pageAd{
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255,209,102,.18), transparent 45%),
+    radial-gradient(circle at 80% 85%, rgba(230,57,70,.3), transparent 55%),
+    linear-gradient(160deg,#8b0d15 0%,#c1121f 45%,#8b0d15 100%);
+  color:#fff;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.ad-scroll{
+  min-height:100%;
+  display:flex;flex-direction:column;
+  padding:calc(24px + var(--st)) 20px calc(18px + var(--sb));
+  position:relative;z-index:1;
+}
+.ad-top{text-align:center;margin-bottom:22px;}
+.ad-logo{
+  width:96px;height:96px;border-radius:28px;margin:0 auto 12px;
+  background:linear-gradient(135deg,#ffd166,#f4a261);
+  display:flex;align-items:center;justify-content:center;
+  font-size:52px;
+  box-shadow:0 0 0 3px rgba(255,209,102,.3),0 16px 40px rgba(0,0,0,.4),
+    inset 0 -5px 16px rgba(217,119,6,.4);
+  overflow:hidden;
+  animation:adLogoFloat 3.5s ease-in-out infinite;
+}
+.ad-logo img{width:100%;height:100%;object-fit:cover;display:block;}
+@keyframes adLogoFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-6px);}
+}
+.ad-top h1{
+  font-size:clamp(57px,16.5vw,78px);
+  font-weight:900;letter-spacing:8px;
+  padding-left:8px;
+  background:linear-gradient(135deg,#ffd166,#f4a261);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:0 6px 34px rgba(255,209,102,.45);
+  line-height:1.1;
+  margin-bottom:14px;
+}
+.ad-slogan{
+  display:inline-block;
+  font-size:clamp(19.5px,5.1vw,22.5px);
+  font-weight:800;letter-spacing:1px;
+  line-height:1.6;
+  padding:12px 20px;
+  background:rgba(255,209,102,.18);
+  border-radius:14px;
+  color:#fff;
+  text-shadow:0 2px 10px rgba(0,0,0,.4);
+}
+.ad-slogan .line{display:block;padding:2px 0;}
+
+.ad-qr-wrap{text-align:center;margin-bottom:18px;}
+.ad-qr-box{
+  width:min(54vw,190px);
+  aspect-ratio:1;
+  margin:0 auto;
+  background:#fff;
+  border-radius:18px;
+  padding:10px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:transform .15s;
+}
+.ad-qr-box:active{transform:scale(.97);}
+.ad-qr-box img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px;}
+.ad-qr-box .ad-qr-ph{
+  font-size:52px;opacity:.4;color:#c1121f;
+}
+.ad-qr-box .ad-qr-hint{
+  position:absolute;left:0;right:0;bottom:6px;
+  font-size:10px;color:#a8968c;text-align:center;font-weight:600;
+}
+.ad-qr-tip{
+  font-size:12px;color:rgba(255,255,255,.88);
+  font-weight:700;margin-top:9px;
+  letter-spacing:.4px;
+}
+
+.ad-contact{margin-bottom:4px;}
+
+/* 电话/地址：字号缩小，保证地址一行显示 */
+.ad-line{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.14);
+  border-radius:12px;
+  padding:9px 14px;margin-bottom:8px;
+  color:#fff;font-size:18px;font-weight:800;
+  text-decoration:none;
+  backdrop-filter:blur(4px);
+  line-height:1.2;
+  letter-spacing:.3px;
+}
+.ad-line .ad-line-icon{
+  width:30px;height:30px;flex:0 0 30px;border-radius:9px;
+  background:rgba(255,209,102,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+}
+.ad-line .ad-line-txt{
+  flex:1;min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  text-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+.ad-line:active{background:rgba(255,255,255,.22);}
+
+.ad-nav-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin-top:4px;
+}
+.ad-nav-btn{
+  height:42px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  font-size:13.5px;font-weight:800;letter-spacing:.3px;
+  text-decoration:none;color:#fff;
+  transition:transform .15s;
+}
+.ad-nav-btn:active{transform:scale(.97);}
+.ad-nav-btn.baidu{
+  background:linear-gradient(135deg,#4f7cff,#3d6aeb);
+  box-shadow:0 5px 12px rgba(79,124,255,.35);
+}
+.ad-nav-btn.amap{
+  background:linear-gradient(135deg,#12b76a,#0a9d56);
+  box-shadow:0 5px 12px rgba(18,183,106,.35);
+}
+
+.ad-start{
+  width:100%;height:74px;border-radius:20px;
+  margin-top:10px;
+  background:linear-gradient(135deg,#ffd166,#f4a261);
+  color:#5c2c00;
+  font-size:22px;font-weight:900;letter-spacing:2.5px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  box-shadow:0 16px 36px rgba(244,162,97,.5);
+  transition:transform .15s,box-shadow .15s;
+  flex:0 0 auto;
+}
+.ad-start:active{transform:scale(.97);box-shadow:0 8px 20px rgba(244,162,97,.6);}
+.ad-start .ad-start-icon{font-size:26px;}
+.ad-start .ad-start-arrow{font-size:28px;opacity:.65;font-weight:900;}
+
+/* ============================================================
+   首页头部
+   ============================================================ */
+.shop-hdr{
+  flex:0 0 auto;
+  padding:calc(10px + var(--st)) 12px 10px;
+  background:linear-gradient(135deg,#c1121f,#8b0d15);color:#fff;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 2px 12px rgba(139,13,21,.3);
+  z-index:20;
+}
+.shop-hdr .logo-mini{
+  width:46px;height:46px;flex:0 0 46px;
+  border-radius:13px;overflow:hidden;
+  background:linear-gradient(135deg,#ffd166,#f4a261);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+  box-shadow:0 0 0 2px rgba(255,209,102,.35);
+}
+.shop-hdr .logo-mini img{width:100%;height:100%;object-fit:cover;display:block;}
+.shop-hdr .hdr-title{
+  flex:1;min-width:0;
+  font-size:42px;font-weight:900;letter-spacing:2px;
+  color:#ffd166;
+  text-shadow:0 3px 16px rgba(255,209,102,.55);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  line-height:1.1;
+}
+.shop-hdr .hdr-sub{
+  flex:0 0 auto;
+  font-size:18px;font-weight:900;
+  color:#fff;
+  text-align:right;line-height:1.15;
+  letter-spacing:.5px;
+  text-shadow:0 2px 6px rgba(0,0,0,.35);
+  white-space:nowrap;
+}
+
+.shop-search{
+  flex:0 0 auto;
+  padding:10px 14px;
+  background:#fff;border-bottom:1px solid var(--line);
+  position:relative;
+}
+.shop-search .si{
+  position:absolute;left:26px;top:50%;transform:translateY(-50%);
+  font-size:15px;color:var(--t3);pointer-events:none;
+}
+.shop-search input{
+  width:100%;height:40px;
+  background:#fdf6f0;border-radius:12px;
+  padding:0 38px 0 38px;font-size:13.5px;
+  border:1.5px solid transparent;
+  transition:all .15s;
+}
+.shop-search input:focus{background:#fff;border-color:var(--red);}
+.shop-search .clear{
+  position:absolute;right:22px;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;border-radius:50%;
+  background:#fff;color:var(--t3);font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);
+}
+
+.shop-cats{
+  flex:0 0 auto;
+  padding:10px 14px;
+  background:#fff;border-bottom:1px solid var(--line);
+  display:flex;gap:8px;overflow-x:auto;
+  scrollbar-width:none;
+}
+.shop-cats::-webkit-scrollbar{display:none;}
+.shop-cats .cat{
+  flex:0 0 auto;
+  padding:6px 14px;border-radius:18px;
+  background:#fdf6f0;color:var(--t2);
+  font-size:12.5px;font-weight:600;
+  border:1px solid transparent;
+  transition:all .15s;white-space:nowrap;
+}
+.shop-cats .cat.active{
+  background:linear-gradient(135deg,#c1121f,#e63946);
+  color:#fff;border-color:transparent;
+  box-shadow:0 4px 10px rgba(193,18,31,.28);
+}
+
+.shop-body{
+  flex:1;min-height:0;overflow:hidden;
+  position:relative;
+}
+.shop-page .scroll{
+  position:absolute;inset:0;
+  overflow-y:auto;
+  padding:12px 14px;
+  padding-bottom:calc(80px + var(--sb));
+  -webkit-overflow-scrolling:touch;
+}
+
+.goods-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+@media(min-width:540px){.goods-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(min-width:900px){.goods-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
+@media(min-width:1200px){.goods-grid{grid-template-columns:repeat(5,minmax(0,1fr));}}
+
+.shop-card{
+  background:#fff;border-radius:12px;
+  border:1px solid var(--line);
+  overflow:hidden;display:flex;flex-direction:column;
+  transition:box-shadow .15s,transform .15s;
+  cursor:pointer;
+}
+.shop-card:active{transform:scale(.98);}
+.shop-card .sc-img{
+  aspect-ratio:1 / 1;
+  background:linear-gradient(135deg,#fdf6f0,#ffe8dd);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(48px,13vw,72px);
+  position:relative;overflow:hidden;
+}
+.shop-card .sc-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.shop-card .sc-img .sold-out{
+  position:absolute;inset:0;
+  background:rgba(43,31,26,.6);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;letter-spacing:1px;
+  z-index:2;
+}
+.shop-card .sc-img .play-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.28);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.shop-card .sc-img .play-overlay:active{background:rgba(0,0,0,.42);}
+.shop-card .sc-img .play-overlay .pi{
+  width:50px;height:50px;border-radius:50%;
+  background:rgba(255,255,255,.94);color:#c1121f;
+  font-size:20px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  padding-left:4px;
+  box-shadow:0 6px 20px rgba(0,0,0,.45);
+}
+.shop-card .sc-body{
+  padding:8px 10px 10px;flex:1;
+  display:flex;flex-direction:column;gap:3px;
+}
+.shop-card .sc-name{
+  font-size:13px;font-weight:800;line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden;
+  min-height:34px;
+}
+.shop-card .sc-meta{
+  font-size:10.5px;color:var(--t3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.shop-card .sc-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:6px;margin-top:auto;padding-top:4px;
+  min-height:30px;
+}
+.shop-card .sc-price{
+  font-size:17px;font-weight:900;color:var(--red);
+  line-height:1;
+}
+.shop-card .sc-price small{
+  font-size:11px;color:var(--t3);font-weight:600;
+  margin-left:2px;
+}
+.shop-card .sc-add{
+  width:28px;height:28px;flex:0 0 28px;border-radius:50%;
+  background:linear-gradient(135deg,#c1121f,#e63946);color:#fff;
+  font-size:16px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 10px rgba(193,18,31,.3);
+  transition:transform .15s;
+}
+.shop-card .sc-add:active{transform:scale(.9);}
+.shop-card .sc-add:disabled{
+  background:#ddd;color:#999;box-shadow:none;
+}
+.shop-card .sc-qty-ctrl{
+  display:flex;align-items:center;gap:2px;
+}
+.shop-card .sc-qty-ctrl button{
+  width:26px;height:26px;flex:0 0 26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;
+  transition:transform .15s;
+}
+.shop-card .sc-qty-ctrl button:active{transform:scale(.9);}
+.shop-card .sc-qty-ctrl .minus{
+  background:#fdf6f0;color:var(--red);
+  border:1.5px solid #fca5a5;
+}
+.shop-card .sc-qty-ctrl .plus{
+  background:linear-gradient(135deg,#c1121f,#e63946);color:#fff;
+  box-shadow:0 4px 10px rgba(193,18,31,.3);
+}
+.shop-card .sc-qty-ctrl .qn{
+  font-size:14px;font-weight:900;
+  min-width:22px;text-align:center;
+  color:var(--red);
+  font-family:"SF Mono",Consolas,monospace;
+}
+
+.cart-fab{
+  position:absolute;
+  right:14px;
+  bottom:calc(72px + var(--sb));
+  height:46px;
+  padding:0 16px 0 12px;
+  border-radius:23px;
+  background:linear-gradient(135deg,#ffd166,#f4a261);
+  color:#5c2c00;
+  font-size:13.5px;
+  font-weight:900;
+  letter-spacing:.3px;
+  display:none;
+  align-items:center;
+  gap:8px;
+  box-shadow:0 10px 24px rgba(244,162,97,.55);
+  z-index:14;
+  transition:transform .15s;
+  white-space:nowrap;
+}
+.cart-fab:active{transform:scale(.96);}
+.cart-fab.show{display:flex;}
+.cart-fab .cf-icon{font-size:18px;}
+.cart-fab .cf-count{
+  background:#c1121f;
+  color:#fff;
+  min-width:22px;
+  height:22px;
+  border-radius:11px;
+  padding:0 6px;
+  font-size:12px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:"SF Mono",Consolas,monospace;
+}
+
+.shop-tabbar{
+  flex:0 0 auto;
+  height:calc(60px + var(--sb));padding-bottom:var(--sb);
+  background:#fff;border-top:1px solid var(--line);
+  display:flex;z-index:15;
+  box-shadow:0 -2px 10px rgba(43,31,26,.04);
+}
+.shop-tabbar .stab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;color:var(--t3);font-size:10.5px;font-weight:500;
+  position:relative;min-height:48px;cursor:pointer;
+}
+.shop-tabbar .stab .ti{font-size:21px;line-height:1;}
+.shop-tabbar .stab.active{color:var(--red);font-weight:700;}
+.shop-tabbar .stab .badge{
+  position:absolute;top:6px;left:50%;margin-left:6px;
+  background:var(--red);color:#fff;font-size:10px;
+  min-width:17px;height:17px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 5px;font-weight:700;
+}
+
+.page-head{
+  flex:0 0 auto;
+  padding:calc(14px + var(--st)) 16px 14px;
+  background:linear-gradient(135deg,#c1121f,#8b0d15);color:#fff;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 2px 12px rgba(139,13,21,.3);
+}
+.page-head .back{
+  width:36px;height:36px;flex:0 0 36px;border-radius:10px;
+  background:rgba(255,255,255,.15);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.page-head .back:active{background:rgba(255,255,255,.28);}
+.page-head .ttl{flex:1;min-width:0;}
+.page-head .ttl h2{font-size:16px;font-weight:800;letter-spacing:.5px;}
+.page-head .ttl .sub{font-size:11.5px;color:rgba(255,255,255,.72);margin-top:2px;}
+.page-head .act{
+  padding:7px 12px;border-radius:8px;
+  background:rgba(255,255,255,.15);color:#fff;
+  font-size:12px;font-weight:700;white-space:nowrap;
+}
+.page-head .act:active{background:rgba(255,255,255,.28);}
+
+.cart-list{display:flex;flex-direction:column;gap:10px;}
+.cart-item{
+  background:#fff;border-radius:14px;
+  border:1px solid var(--line);
+  padding:12px 14px;
+  display:flex;align-items:center;gap:12px;
+}
+.cart-item .ci-img{
+  width:56px;height:56px;flex:0 0 56px;border-radius:12px;
+  background:linear-gradient(135deg,#fdf6f0,#ffe8dd);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;overflow:hidden;
+}
+.cart-item .ci-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.cart-item .ci-info{flex:1;min-width:0;}
+.cart-item .ci-name{
+  font-size:14.5px;font-weight:800;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.cart-item .ci-price{
+  font-size:12.5px;color:var(--t3);margin-top:4px;
+}
+.cart-item .ci-price b{color:var(--red);font-size:14px;}
+.cart-item .ci-qty{
+  display:flex;align-items:center;gap:8px;flex:0 0 auto;
+}
+.cart-item .ci-qty button{
+  width:30px;height:30px;border-radius:50%;
+  background:#fdf6f0;color:var(--t2);font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+}
+.cart-item .ci-qty button:active{background:#ffe8dd;}
+.cart-item .ci-qty .q{
+  font-size:16px;font-weight:800;min-width:26px;text-align:center;
+}
+.cart-item .ci-sub{
+  font-size:15px;font-weight:800;
+  min-width:64px;text-align:right;color:var(--red);
+}
+
+.bottom-bar{
+  flex:0 0 auto;
+  background:#fff;border-top:1px solid var(--line);
+  padding:12px 16px calc(12px + var(--sb));
+}
+.bottom-bar .bb-sum{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:10px;gap:10px;
+}
+.bottom-bar .bb-sum .left{font-size:12.5px;color:var(--t3);}
+.bottom-bar .bb-sum .total{
+  font-size:clamp(24px,7vw,30px);font-weight:900;
+  color:var(--red);line-height:1;letter-spacing:-1px;
+}
+.bottom-bar .bb-actions{display:flex;gap:10px;}
+.bottom-bar .bb-actions button{
+  height:54px;border-radius:14px;font-size:16px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.bottom-bar .bb-actions .ghost{
+  flex:0 0 110px;
+  background:linear-gradient(135deg,#ffd166,#f4a261);
+  color:#5c2c00;
+  box-shadow:0 6px 16px rgba(244,162,97,.35);
+}
+.bottom-bar .bb-actions .primary{
+  flex:1;background:linear-gradient(135deg,#12b76a,#0a9d56);color:#fff;
+  box-shadow:0 8px 20px rgba(18,183,106,.35);
+}
+.bottom-bar .bb-actions .primary:disabled{
+  background:#ddd;color:#999;box-shadow:none;
+}
+
+.empty{
+  text-align:center;padding:60px 20px;color:var(--t3);
+}
+.empty .ei{font-size:56px;opacity:.35;margin-bottom:14px;}
+.empty .et{font-size:14.5px;font-weight:700;margin-bottom:6px;}
+.empty .es{font-size:12.5px;line-height:1.7;}
+.empty .ebtn{
+  display:inline-block;margin-top:18px;
+  padding:10px 22px;border-radius:12px;
+  background:linear-gradient(135deg,#c1121f,#e63946);
+  color:#fff;font-size:13.5px;font-weight:800;
+  box-shadow:0 6px 16px rgba(193,18,31,.3);
+}
+
+.sheet-mask{
+  position:fixed;inset:0;background:rgba(43,31,26,.55);z-index:900;
+  opacity:0;visibility:hidden;transition:all .25s;
+  backdrop-filter:blur(3px);
+}
+.sheet-mask.show{opacity:1;visibility:visible;}
+.sheet{
+  position:fixed;bottom:0;left:0;right:0;z-index:950;
+  background:#fff;
+  border-radius:22px 22px 0 0;
+  max-height:92vh;display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  padding-bottom:var(--sb);overflow:hidden;
+}
+@media(min-width:768px){
+  .sheet{left:50%;right:auto;width:min(560px,92vw);
+    transform:translate(-50%,100%);
+    border-radius:22px;margin-bottom:20px;max-height:88vh;}
+  .sheet.show{transform:translate(-50%,0);}
+}
+.sheet.show{transform:translateY(0);}
+.sheet-head{
+  padding:16px 20px;display:flex;align-items:center;
+  border-bottom:1px solid var(--line);flex:0 0 auto;gap:12px;
+}
+.sheet-head .st{font-size:16.5px;font-weight:800;flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sheet-head .close{
+  width:34px;height:34px;border-radius:50%;background:#fdf6f0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--t2);
+}
+.sheet-body{
+  flex:1;min-height:0;overflow-y:auto;
+  padding:18px 20px;
+  -webkit-overflow-scrolling:touch;
+}
+.sheet-foot{
+  padding:14px 20px;border-top:1px solid var(--line);
+  flex:0 0 auto;display:flex;gap:10px;background:#fff;
+}
+.sheet-foot button{
+  flex:1;height:50px;border-radius:12px;font-size:15.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.sheet-foot .cancel{background:#fdf6f0;color:var(--t2);}
+.sheet-foot .save{
+  background:linear-gradient(135deg,#c1121f,#e63946);color:#fff;
+  box-shadow:0 8px 20px rgba(193,18,31,.35);
+}
+.sheet-foot .save:disabled{background:#ddd;color:#999;box-shadow:none;}
+
+.detail-hero{
+  width:100%;aspect-ratio:1 / 1;border-radius:14px;
+  background:linear-gradient(135deg,#fdf6f0,#ffe8dd);
+  display:flex;align-items:center;justify-content:center;
+  font-size:100px;overflow:hidden;margin-bottom:16px;
+  position:relative;cursor:pointer;
+}
+.detail-hero img{width:100%;height:100%;object-fit:cover;display:block;}
+.detail-hero .play-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.28);
+  display:flex;align-items:center;justify-content:center;
+}
+.detail-hero .play-overlay .pi{
+  width:72px;height:72px;border-radius:50%;
+  background:rgba(255,255,255,.94);color:#c1121f;
+  font-size:30px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  padding-left:5px;
+  box-shadow:0 8px 26px rgba(0,0,0,.45);
+}
+.detail-name{
+  font-size:19px;font-weight:900;line-height:1.35;
+  margin-bottom:8px;
+}
+.detail-price-row{
+  display:flex;align-items:baseline;gap:10px;
+  margin-bottom:14px;padding-bottom:14px;
+  border-bottom:1px dashed var(--line);
+}
+.detail-price-row .dp{
+  font-size:26px;font-weight:900;color:var(--red);line-height:1;
+}
+.detail-price-row .dp small{font-size:13px;font-weight:700;margin-right:2px;}
+.detail-price-row .tag{
+  font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:8px;
+  background:#ffeaea;color:var(--red);
+}
+.detail-info-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-bottom:14px;
+}
+.detail-info-grid .info-item{
+  background:#fdf6f0;border-radius:12px;padding:10px 12px;
+}
+.detail-info-grid .info-item .l{
+  font-size:11px;color:var(--t3);font-weight:600;margin-bottom:4px;
+}
+.detail-info-grid .info-item .v{
+  font-size:13.5px;font-weight:800;color:var(--t1);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.detail-qty{
+  display:flex;align-items:center;justify-content:space-between;
+  background:#fdf6f0;border-radius:12px;padding:12px 14px;
+  margin-bottom:8px;
+}
+.detail-qty .lb{font-size:13.5px;font-weight:700;color:var(--t2);}
+.detail-qty .ctrl{display:flex;align-items:center;gap:14px;}
+.detail-qty .ctrl button{
+  width:34px;height:34px;border-radius:50%;
+  background:#fff;color:var(--t1);font-size:18px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--line);
+}
+.detail-qty .ctrl button:active{background:#ffe8dd;border-color:#f4a261;}
+.detail-qty .ctrl .qn{
+  font-size:17px;font-weight:800;min-width:32px;text-align:center;
+}
+.detail-desc{
+  background:#fdf6f0;border-radius:12px;padding:12px 14px;
+  font-size:13px;color:var(--t2);line-height:1.75;
+}
+.detail-desc .dh{
+  font-size:12px;color:var(--t3);font-weight:800;margin-bottom:6px;
+}
+
+.form-block{
+  background:#fff;border-radius:14px;
+  border:1px solid var(--line);
+  padding:14px 16px;margin-bottom:12px;
+}
+.form-block .fb-title{
+  font-size:13px;font-weight:800;color:var(--t2);
+  margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
+.form-block .fb-title .dot{
+  width:6px;height:6px;border-radius:50%;background:var(--red);
+}
+.form-row{margin-bottom:12px;}
+.form-row:last-child{margin-bottom:0;}
+.form-row label{
+  display:block;font-size:12.5px;color:var(--t2);
+  margin-bottom:6px;font-weight:700;
+}
+.form-row label .req{color:var(--red);margin-left:2px;}
+.form-row input,
+.form-row textarea{
+  width:100%;background:#fdf6f0;
+  border-radius:11px;padding:12px 14px;
+  font-size:14.5px;border:1.5px solid transparent;
+  transition:all .15s;
+}
+.form-row textarea{
+  min-height:70px;resize:vertical;line-height:1.6;
+  font-family:inherit;
+}
+.form-row input:focus,
+.form-row textarea:focus{
+  background:#fff;border-color:var(--red);
+}
+
+.pick-up{
+  display:flex;align-items:center;gap:10px;
+  background:#fdf6f0;border-radius:12px;padding:12px 14px;
+  border:2px solid transparent;
+}
+.pick-up.sel{border-color:var(--red);background:#fff;}
+.pick-up .pk-icon{
+  width:36px;height:36px;flex:0 0 36px;border-radius:10px;
+  background:linear-gradient(135deg,#ffd166,#f4a261);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.pick-up .pk-info{flex:1;min-width:0;}
+.pick-up .pk-info .n{font-size:14px;font-weight:800;}
+.pick-up .pk-info .s{font-size:11.5px;color:var(--t3);margin-top:2px;}
+.pick-up .pk-radio{
+  width:22px;height:22px;flex:0 0 22px;border-radius:50%;
+  border:2px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+}
+.pick-up.sel .pk-radio{border-color:var(--red);}
+.pick-up.sel .pk-radio::after{
+  content:'';width:10px;height:10px;border-radius:50%;
+  background:var(--red);
+}
+
+.order-mini-list{
+  background:#fff;border-radius:14px;
+  border:1px solid var(--line);overflow:hidden;
+  margin-bottom:12px;
+}
+.order-mini-list .oml-item{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:11px 14px;font-size:13px;
+  border-bottom:1px solid #f5f7fc;
+}
+.order-mini-list .oml-item:last-child{border-bottom:none;}
+.order-mini-list .oml-item .n{
+  flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-weight:700;
+}
+.order-mini-list .oml-item .q{
+  color:var(--t3);font-weight:600;
+  flex:0 0 auto;padding:0 6px;
+}
+.order-mini-list .oml-item .p{
+  flex:0 0 auto;font-weight:800;color:var(--red);
+}
+.order-mini-list .oml-total{
+  display:flex;justify-content:space-between;align-items:center;
+  background:#fdf6f0;padding:14px;
+  font-size:14px;font-weight:800;
+}
+.order-mini-list .oml-total .t{
+  color:var(--red);font-size:20px;font-weight:900;
+}
+
+.done-wrap{
+  flex:1;overflow-y:auto;
+  padding:calc(18px + var(--st)) 18px calc(20px + var(--sb));
+  text-align:center;
+  -webkit-overflow-scrolling:touch;
+}
+.done-icon{
+  width:91px;height:91px;border-radius:50%;
+  background:linear-gradient(135deg,#12b76a,#0a9d56);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:52px;margin:6px auto 14px;
+  box-shadow:0 12px 30px rgba(18,183,106,.4);
+  animation:popIn .35s cubic-bezier(.4,0,.2,1);
+}
+@keyframes popIn{
+  from{transform:scale(.5);opacity:0;}
+  to{transform:scale(1);opacity:1;}
+}
+.done-title{
+  font-size:29px;font-weight:900;
+  margin-bottom:20px;
+  letter-spacing:2px;
+}
+
+.done-code-big{
+  background:linear-gradient(135deg,#c1121f,#e63946);
+  color:#fff;
+  padding:20px 18px;border-radius:16px;
+  font-family:"SF Mono",Consolas,monospace;
+  font-size:52px;font-weight:900;letter-spacing:4px;
+  text-align:center;margin-bottom:18px;
+  box-shadow:0 12px 30px rgba(193,18,31,.45);
+  line-height:1;
+}
+.done-code-big .label{
+  display:block;font-family:inherit;
+  font-size:12px;font-weight:800;letter-spacing:3px;
+  opacity:.9;margin-bottom:10px;
+}
+
+.done-card{
+  background:#fff;border-radius:16px;
+  border:1px solid var(--line);
+  padding:6px 16px;margin-bottom:18px;text-align:left;
+}
+.done-card .dc-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:13px 0;font-size:13.5px;
+  border-bottom:1px solid #f5f7fc;
+  gap:12px;
+}
+.done-card .dc-row:last-child{border-bottom:none;}
+.done-card .dc-row .l{
+  color:#4f7cff;font-weight:800;flex:0 0 auto;
+  font-size:13.5px;
+}
+.done-card .dc-row .v{
+  font-weight:800;text-align:right;font-size:15.5px;
+  max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--t1);
+}
+.done-card .dc-row.total{
+  border-top:2px dashed var(--line);
+  margin-top:4px;padding-top:16px;font-size:15px;
+}
+.done-card .dc-row.total .l{color:var(--t1);font-weight:900;font-size:14.5px;}
+.done-card .dc-row.total .v{color:var(--red);font-size:24px;font-weight:900;}
+
+.done-actions{
+  display:flex;flex-direction:column;gap:10px;
+  margin-top:8px;
+}
+.done-actions button{
+  height:52px;border-radius:14px;
+  font-size:15px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:transform .15s;
+}
+.done-actions button:active{transform:scale(.97);}
+.done-actions .btn-time{
+  background:linear-gradient(135deg,#4f7cff,#3d6aeb);color:#fff;
+  box-shadow:0 6px 16px rgba(79,124,255,.35);
+}
+.done-actions .btn-edit{
+  height:44px;
+  background:linear-gradient(135deg,#ffd166,#f4a261);
+  color:#5c2c00;
+  box-shadow:0 6px 16px rgba(244,162,97,.35);
+  font-size:14.5px;
+}
+.done-actions .btn-bye{
+  height:82px;
+  background:linear-gradient(135deg,#c1121f,#e63946);
+  color:#fff;
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:2.5px;
+  box-shadow:0 12px 30px rgba(193,18,31,.5);
+  margin-top:6px;
+  text-shadow:0 2px 8px rgba(0,0,0,.25);
+}
+
+.order-phone-row{
+  background:#fff;border-radius:14px;
+  border:1px solid var(--line);
+  padding:12px 14px;margin-bottom:12px;
+  display:flex;gap:8px;align-items:center;
+}
+.order-phone-row input{
+  flex:1;height:42px;background:#fdf6f0;
+  border-radius:11px;padding:0 14px;
+  font-size:14px;border:1.5px solid transparent;
+}
+.order-phone-row input:focus{background:#fff;border-color:var(--red);}
+.order-phone-row button{
+  flex:0 0 auto;height:42px;padding:0 18px;border-radius:11px;
+  background:linear-gradient(135deg,#c1121f,#e63946);color:#fff;
+  font-size:13.5px;font-weight:800;
+  box-shadow:0 4px 12px rgba(193,18,31,.25);
+}
+
+.ocard{
+  background:#fff;border-radius:14px;
+  border:1px solid var(--line);overflow:hidden;
+  margin-bottom:12px;
+}
+.ocard .oc-head{
+  padding:12px 14px;
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;
+}
+.ocard .oc-code{
+  font-size:14px;font-weight:900;
+  font-family:"SF Mono",Consolas,monospace;color:var(--red);
+  flex:0 0 auto;
+}
+.ocard .oc-mid{flex:1;min-width:0;}
+.ocard .oc-mid .t{
+  font-size:12px;color:var(--t3);margin-top:3px;
+}
+.ocard .oc-right{text-align:right;flex:0 0 auto;}
+.ocard .oc-amount{font-size:15px;font-weight:900;color:var(--t1);}
+.ocard .oc-status{
+  display:inline-block;padding:2px 9px;border-radius:18px;
+  font-size:10.5px;font-weight:700;margin-top:4px;
+}
+.st-wait{background:#fff4e5;color:#d97706;}
+.st-paid{background:#e7f8ef;color:#0f9d58;}
+.st-packed{background:#ffeaea;color:var(--red);}
+.st-done{background:#f0f1f5;color:var(--t3);}
+.st-cancel{background:#fee;color:var(--red);}
+
+.ocard .oc-body{
+  display:none;
+  padding:0 14px 14px;
+  border-top:1px solid #f5f7fc;
+  background:#fdf6f0;
+}
+.ocard.open .oc-body{display:block;}
+.ocard .oc-body h4{
+  font-size:11.5px;color:var(--t3);font-weight:800;
+  margin:12px 0 6px;letter-spacing:.5px;
+}
+.ocard .oc-goods{
+  background:#fff;border-radius:10px;overflow:hidden;
+}
+.ocard .oc-good{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:9px 12px;font-size:12.5px;
+  border-bottom:1px solid #f5f7fc;
+}
+.ocard .oc-good:last-child{border-bottom:none;}
+.ocard .oc-good .n{
+  flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.ocard .oc-good .q{color:var(--t3);}
+.ocard .oc-good .p{font-weight:800;}
+
+.toast{
+  position:fixed;left:50%;bottom:110px;
+  transform:translate(-50%,20px);
+  background:rgba(43,31,26,.96);color:#fff;
+  font-size:13.5px;padding:12px 24px;
+  border-radius:14px;opacity:0;pointer-events:none;
+  transition:all .28s;z-index:99999;
+  max-width:82vw;text-align:center;font-weight:500;
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+.confirm-mask{
+  position:fixed;inset:0;background:rgba(43,31,26,.6);
+  z-index:9999;display:none;
+  align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(4px);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.confirm-mask.show{display:flex;}
+.confirm-box{
+  background:#fff;border-radius:20px;
+  padding:24px 22px;width:100%;max-width:380px;
+  text-align:center;
+  animation:popIn .25s cubic-bezier(.4,0,.2,1);
+  margin:auto;
+}
+.confirm-box .icon{
+  width:56px;height:56px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;margin:0 auto 14px;
+  background:linear-gradient(135deg,#ffe4e4,#fecaca);color:var(--red);
+}
+.confirm-box h3{
+  font-size:17px;font-weight:800;
+  margin-bottom:10px;color:var(--t1);
+}
+.confirm-box .info{
+  font-size:14px;color:var(--t2);
+  line-height:1.75;margin-bottom:22px;
+  text-align:left;
+}
+.confirm-box .info .hl{
+  color:var(--red);font-weight:800;
+}
+.confirm-box .btns{display:flex;gap:10px;}
+.confirm-box .btns button{
+  flex:1;height:48px;border-radius:12px;
+  font-size:15px;font-weight:800;
+  transition:transform .15s;
+}
+.confirm-box .btns button:active{transform:scale(.97);}
+.confirm-box .btns .ok{
+  background:linear-gradient(135deg,#c1121f,#e63946);color:#fff;
+}
+.confirm-box .btns .cancel{
+  background:#fdf6f0;color:var(--t2);
+}
+
+#afterOrderMask .confirm-box{max-width:420px;}
+#afterOrderMask .icon{
+  width:64px;height:64px;font-size:30px;
+  background:linear-gradient(135deg,#fff4e0,#ffe0b8);
+  color:#d97706;
+}
+#afterOrderMask .info{
+  font-size:14.5px;line-height:1.85;
+  background:#fff9ee;
+  padding:14px 16px;border-radius:12px;
+  border:1px solid #ffe0b8;
+  color:#6b4a00;
+}
+
+.time-box{
+  background:#fff;border-radius:20px;
+  padding:22px 20px;width:100%;max-width:400px;
+  animation:popIn .25s cubic-bezier(.4,0,.2,1);
+  margin:auto;
+}
+.time-box h3{
+  font-size:17px;font-weight:800;text-align:center;
+  margin-bottom:6px;color:var(--t1);
+}
+.time-box .sub{
+  font-size:12.5px;color:var(--t3);text-align:center;
+  margin-bottom:18px;
+}
+.time-row{
+  display:grid;grid-template-columns:1.3fr 1fr 1fr;
+  gap:8px;margin-bottom:12px;
+}
+.time-row.two{
+  grid-template-columns:1fr 1fr;
+}
+.time-cell{position:relative;}
+.time-cell .lbl{
+  font-size:11px;color:var(--t3);font-weight:700;
+  margin-bottom:5px;padding-left:2px;
+}
+.time-cell select{
+  width:100%;height:44px;
+  background:#fdf6f0;border-radius:11px;
+  padding:0 12px;
+  font-size:14.5px;font-weight:700;
+  border:1.5px solid transparent;
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23a8968c' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:32px;
+}
+.time-cell select:focus{
+  background-color:#fff;border-color:var(--red);outline:none;
+}
+.time-box .btns{display:flex;gap:10px;margin-top:16px;}
+.time-box .btns button{
+  flex:1;height:48px;border-radius:12px;
+  font-size:15px;font-weight:800;
+}
+.time-box .btns .ok{
+  background:linear-gradient(135deg,#c1121f,#e63946);color:#fff;
+}
+.time-box .btns .cancel{
+  background:#fdf6f0;color:var(--t2);
+}
+
+.img-viewer{
+  position:fixed;inset:0;background:rgba(0,0,0,.95);
+  z-index:10000;display:none;
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.img-viewer.show{display:flex;}
+.img-viewer img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;display:block;
+  border-radius:8px;
+  background:#fff;
+}
+.img-viewer .close{
+  position:absolute;top:calc(16px + var(--st));right:16px;
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(255,255,255,.2);color:#fff;
+  font-size:22px;
+  display:flex;align-items:center;justify-content:center;
+}
+</style>
+</head>
+<body>
+
+<div class="shop-app" id="shopApp">
+
+  <!-- 广告页 -->
+  <div class="shop-page show" id="pageAd">
+    <div class="ad-scroll">
+      <div class="ad-top">
+        <div class="ad-logo" id="adLogo">🎆</div>
+        <h1>喜旺烟花</h1>
+        <div class="ad-slogan">
+          <span class="line">主营品类：生日烟花、儿童烟花、网红烟花</span>
+          <span class="line">各类礼炮及鞭炮</span>
+          <span class="line" style="margin-top:4px;">持证经营，支持同城自提</span>
+        </div>
+      </div>
+
+      <div class="ad-qr-wrap">
+        <div class="ad-qr-box" id="adQrBox" onclick="viewAdQr()">
+          <span class="ad-qr-ph">💬</span>
+        </div>
+        <div class="ad-qr-tip" id="adQrTip">长按识别二维码 · 添加微信</div>
+      </div>
+
+      <div class="ad-contact">
+        <a class="ad-line" id="adPhoneLine" href="tel:">
+          <span class="ad-line-icon">📞</span>
+          <span class="ad-line-txt" id="adPhone">点击查看商家电话</span>
+        </a>
+        <div class="ad-line">
+          <span class="ad-line-icon">📍</span>
+          <span class="ad-line-txt" id="adAddress">店铺地址</span>
+        </div>
+        <div class="ad-nav-row">
+          <a class="ad-nav-btn baidu" id="adNavBaidu" target="_blank" rel="noopener">🗺️ 百度导航</a>
+          <a class="ad-nav-btn amap" id="adNavAmap" target="_blank" rel="noopener">🗺️ 高德导航</a>
+        </div>
+      </div>
+
+      <button class="ad-start" onclick="startShopping()">
+        <span class="ad-start-icon">🛒</span>
+        <span>开始购物</span>
+        <span class="ad-start-arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 首页 -->
+  <div class="shop-page" id="pageHome">
+    <div class="shop-hdr">
+      <div class="logo-mini" id="shopLogo">🎆</div>
+      <div class="hdr-title">喜旺烟花</div>
+      <div class="hdr-sub">持证经营<br>支持同城自提</div>
+    </div>
+    <div class="shop-search">
+      <span class="si">🔍</span>
+      <input type="text" id="shopSearch" placeholder="搜索商品名称 / 品牌"
+        oninput="renderShopGoods()" autocomplete="off">
+      <button class="clear" onclick="clearShopSearch()">✕</button>
+    </div>
+    <div class="shop-cats" id="shopCats"></div>
+    <div class="shop-body">
+      <div class="scroll">
+        <div class="goods-grid" id="shopGoodsGrid"></div>
+      </div>
+    </div>
+
+    <button class="cart-fab" id="cartFab" onclick="switchShopTab('cart')">
+      <span class="cf-icon">🛒</span>
+      <span>去购物车结算</span>
+      <span class="cf-count" id="cartFabCount">0</span>
+    </button>
+
+    <div class="shop-tabbar">
+      <div class="stab active" data-page="home" onclick="switchShopTab('home')">
+        <span class="ti">🏠</span>首页
+      </div>
+      <div class="stab" data-page="cart" onclick="switchShopTab('cart')">
+        <span class="ti">🛒</span>购物车
+        <span class="badge" id="cartBadge" style="display:none;">0</span>
+      </div>
+      <div class="stab" data-page="orders" onclick="switchShopTab('orders')">
+        <span class="ti">📋</span>我的订单
+      </div>
+    </div>
+  </div>
+
+  <!-- 购物车页 -->
+  <div class="shop-page" id="pageCart">
+    <div class="page-head">
+      <button class="back" onclick="switchShopTab('home')">←</button>
+      <div class="ttl"><h2>🛒 购物车</h2><div class="sub" id="cartSub">共 0 件</div></div>
+      <button class="act" onclick="askClearCart()">清空</button>
+    </div>
+    <div class="shop-body">
+      <div class="scroll">
+        <div class="cart-list" id="cartList"></div>
+      </div>
+    </div>
+    <div class="bottom-bar" id="cartBottomBar" style="display:none;">
+      <div class="bb-sum">
+        <div class="left">合计</div>
+        <div class="total" id="cartTotal">¥0</div>
+      </div>
+      <div class="bb-actions">
+        <button class="ghost" onclick="switchShopTab('home')">继续逛</button>
+        <button class="primary" id="cartCheckoutBtn" onclick="openCheckout()">去结算</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 订单页 -->
+  <div class="shop-page" id="pageOrders">
+    <div class="page-head">
+      <button class="back" onclick="switchShopTab('home')">←</button>
+      <div class="ttl"><h2>📋 我的订单</h2><div class="sub">输入手机号查看订单</div></div>
+    </div>
+    <div class="shop-body">
+      <div class="scroll">
+        <div class="order-phone-row">
+          <input type="tel" id="orderPhone" placeholder="请输入下单时填的手机号"
+            maxlength="11" onkeydown="if(event.key==='Enter')queryMyOrders()" autocomplete="off">
+          <button onclick="queryMyOrders()">查询</button>
+        </div>
+        <div id="ordersList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算页 -->
+  <div class="shop-page" id="pageCheckout">
+    <div class="page-head">
+      <button class="back" onclick="switchShopTab('cart')">←</button>
+      <div class="ttl"><h2>📝 填写订单</h2><div class="sub">请核对商品和提货信息</div></div>
+    </div>
+    <div class="shop-body">
+      <div class="scroll" style="padding-bottom:24px;">
+        <div class="form-block">
+          <div class="fb-title"><span class="dot"></span>提货方式</div>
+          <div class="pick-up sel">
+            <div class="pk-icon">🏪</div>
+            <div class="pk-info">
+              <div class="n">到店自提</div>
+              <div class="s">下单后到店报订单号提货</div>
+            </div>
+            <div class="pk-radio"></div>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <div class="fb-title"><span class="dot"></span>提货人信息</div>
+          <div class="form-row">
+            <label>姓名 <span class="req">*</span></label>
+            <input type="text" id="ckName" placeholder="请输入您的姓名" autocomplete="off">
+          </div>
+          <div class="form-row">
+            <label>手机号 <span class="req">*</span></label>
+            <input type="tel" id="ckPhone" placeholder="请输入 11 位手机号" maxlength="11"
+              autocomplete="off">
+          </div>
+          <div class="form-row">
+            <label>备注（选填）</label>
+            <textarea id="ckRemark" placeholder="如有特殊需求可在此说明，比如：请帮忙分装 / 送货时间等"></textarea>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <div class="fb-title"><span class="dot"></span>商品清单</div>
+          <div class="order-mini-list" id="ckGoodsList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="bb-sum">
+        <div class="left">合计</div>
+        <div class="total" id="ckTotal">¥0</div>
+      </div>
+      <div class="bb-actions">
+        <button class="primary" id="submitOrderBtn" onclick="submitOrder()">提交订单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 下单成功页 -->
+  <div class="shop-page" id="pageDone">
+    <div class="shop-body">
+      <div class="scroll" style="padding:0;overflow:hidden;">
+        <div class="done-wrap">
+          <div class="done-icon">✓</div>
+          <div class="done-title">下单成功</div>
+
+          <div class="done-code-big">
+            <span class="label">订 单 编 号</span>
+            <span id="dnCode">—</span>
+          </div>
+
+          <div class="done-card">
+            <div class="dc-row"><span class="l">提货人</span><span class="v" id="dnName">—</span></div>
+            <div class="dc-row"><span class="l">手机号</span><span class="v" id="dnPhone">—</span></div>
+            <div class="dc-row"><span class="l">商品件数</span><span class="v" id="dnCount">—</span></div>
+            <div class="dc-row"><span class="l">提货时间</span><span class="v" id="dnPickTime">待选择</span></div>
+            <div class="dc-row total"><span class="l">订单金额</span><span class="v" id="dnAmount">¥0</span></div>
+          </div>
+
+          <div class="done-actions">
+            <button class="btn-time" onclick="openPickTime()">🗓 设置预计提货时间</button>
+            <button class="btn-edit" onclick="openEditInfo()">✏️ 修改提货人信息</button>
+            <button class="btn-bye" onclick="backToAd()">感谢贵客光临，愿您下次再来</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 商品详情 sheet -->
+<div class="sheet-mask" id="detailMask" onclick="closeDetail()"></div>
+<div class="sheet" id="detailSheet">
+  <div class="sheet-head">
+    <div class="st" id="dtTitle">商品详情</div>
+    <button class="close" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="sheet-body" id="detailBody"></div>
+  <div class="sheet-foot">
+    <button class="cancel" onclick="closeDetail()">返回</button>
+    <button class="save" id="dtAddBtn" onclick="addFromDetail()">🛒 加入购物车</button>
+  </div>
+</div>
+
+<!-- 下单后提示弹窗 -->
+<div class="confirm-mask" id="afterOrderMask">
+  <div class="confirm-box">
+    <div class="icon">📞</div>
+    <h3>下单成功</h3>
+    <div class="info">
+      <b class="hl">下单后请及时电话与商家联系</b>，防止未及时看到下单信息。<br><br>
+      凭<b class="hl">订单编号及手机号</b>到店取货。
+    </div>
+    <div class="btns">
+      <button class="ok" onclick="confirmAfterOrder()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 清空购物车确认 -->
+<div class="confirm-mask" id="clearMask">
+  <div class="confirm-box">
+    <div class="icon">🗑️</div>
+    <h3>清空购物车</h3>
+    <div class="info" style="text-align:center;">确定要清空购物车中<br>所有商品吗？</div>
+    <div class="btns">
+      <button class="ok" onclick="doClearCart()">确认清空</button>
+      <button class="cancel" onclick="closeClearCart()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 时间选择器 -->
+<div class="confirm-mask" id="timeMask">
+  <div class="time-box">
+    <h3>🗓 设置预计提货时间</h3>
+    <div class="sub" id="timeSub">请选择到店提货的日期和时间</div>
+    <div class="time-row">
+      <div class="time-cell"><div class="lbl">年</div><select id="pickYear"></select></div>
+      <div class="time-cell"><div class="lbl">月</div><select id="pickMonth"></select></div>
+      <div class="time-cell"><div class="lbl">日</div><select id="pickDay"></select></div>
+    </div>
+    <div class="time-row two">
+      <div class="time-cell"><div class="lbl">时（8-21点）</div><select id="pickHour"></select></div>
+      <div class="time-cell"><div class="lbl">分</div><select id="pickMinute"></select></div>
+    </div>
+    <div class="btns">
+      <button class="ok" onclick="savePickTime()">确定</button>
+      <button class="cancel" onclick="closePickTime()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修改提货人信息 -->
+<div class="confirm-mask" id="editMask">
+  <div class="time-box">
+    <h3>✏️ 修改提货人信息</h3>
+    <div class="sub">修改后将替换订单中的提货人信息</div>
+    <div class="form-row">
+      <label>姓名 <span class="req">*</span></label>
+      <input type="text" id="editName" placeholder="请输入姓名" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <label>手机号 <span class="req">*</span></label>
+      <input type="tel" id="editPhone" placeholder="请输入 11 位手机号" maxlength="11"
+        autocomplete="off">
+    </div>
+    <div class="btns">
+      <button class="ok" onclick="saveEditInfo()">确定</button>
+      <button class="cancel" onclick="closeEditInfo()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 图片查看器 -->
+<div class="img-viewer" id="imgViewer" onclick="closeImgViewer()">
+  <button class="close" onclick="closeImgViewer()">✕</button>
+  <img id="imgViewerSrc" src="" alt="">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* 音效引擎 */
+const SFX = (function(){
+  let ctx = null;
+  function getCtx(){
+    try{
+      if(!ctx){
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return null;
+        ctx = new AC();
+      }
+      if(ctx.state === 'suspended'){ ctx.resume().catch(()=>{}); }
+      return ctx;
+    }catch(e){ return null; }
+  }
+  function tone(freq, dur, type, vol, delay){
+    const c = getCtx(); if(!c) return;
+    const t0 = c.currentTime + (delay || 0);
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(vol || 0.12, t0 + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain);
+    gain.connect(c.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.03);
+  }
+  function noise(dur, vol, delay){
+    const c = getCtx(); if(!c) return;
+    const t0 = c.currentTime + (delay || 0);
+    const len = Math.max(1, Math.floor(c.sampleRate * dur));
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<len;i++){
+      data[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2);
+    }
+    const src = c.createBufferSource();
+    const gain = c.createGain();
+    const filter = c.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 2200;
+    filter.Q.value = 1.2;
+    gain.gain.setValueAtTime(vol || 0.08, t0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.buffer = buf;
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(c.destination);
+    src.start(t0);
+    src.stop(t0 + dur + 0.02);
+  }
+  return {
+    click(){ noise(0.045, 0.07); tone(1180, 0.03, 'sine', 0.05, 0.005); },
+    success(){ tone(780, 0.07, 'sine', 0.1); tone(1170, 0.11, 'sine', 0.09, 0.06); },
+    error(){ tone(420, 0.09, 'square', 0.07); tone(220, 0.16, 'square', 0.07, 0.08); },
+    scan(){ tone(1760, 0.07, 'sine', 0.13); tone(2350, 0.045, 'sine', 0.07, 0.025); }
+  };
+})();
+
+/* 存储 & 数据 */
+const SafeStore = {
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
+  set(k,v){
+    try{ localStorage.setItem(k, JSON.stringify(v)); return true; }
+    catch(e){ console.error('存储失败', k, e); return false; }
+  }
+};
+
+let GOODS = SafeStore.get('fw_goods', null) || [];
+let ORDERS = SafeStore.get('fw_orders', null) || [];
+let QR_CODES = SafeStore.get('fw_qr_codes', { wx:'', ali:'', logo:'' });
+
+let SHOP_INFO = SafeStore.get('fw_shop_info', {
+  phone: '13338092733',
+  address: '近海镇新华桥往南500米',
+  poiName: '喜旺烟花爆竹',
+  baiduUid: 'aa4f4d518bdc23d2922ca3ac',
+  amapKeyword: '近海镇新华桥',
+  wxQr: ''
+});
+
+let CART = SafeStore.get('fw_shop_cart', []);
+let curCat = 'all';
+let curDetailCode = null;
+let curDetailQty = 1;
+let curOrderCode = null;
+let pendingOrderCode = null;
+
+/* 提货时间基准（下单时间 + 1 分钟） */
+let minPickTime = null;
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(()=>t.classList.remove('show'), 1900);
+}
+function saveCart(){ SafeStore.set('fw_shop_cart', CART); }
+function saveOrders(){ SafeStore.set('fw_orders', ORDERS); }
+
+/* 解析订单时间字符串 "YYYY-MM-DD HH:mm" */
+function parseOrderTime(str){
+  if(!str) return null;
+  try{
+    const m = str.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/);
+    if(!m) return null;
+    return new Date(
+      parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]),
+      parseInt(m[4]), parseInt(m[5]), 0
+    );
+  }catch(e){ return null; }
+}
+
+/* 广告页初始化 */
+(function initAd(){
+  const logo = QR_CODES.logo || '';
+  if(logo){
+    document.getElementById('adLogo').innerHTML = `<img src="${logo}">`;
+    document.getElementById('shopLogo').innerHTML = `<img src="${logo}">`;
+  }
+  const qrSrc = SHOP_INFO.wxQr || QR_CODES.wx || '';
+  const qrBox = document.getElementById('adQrBox');
+  if(qrSrc){
+    qrBox.innerHTML = `<img src="${qrSrc}" alt="微信二维码">`;
+    document.getElementById('adQrTip').textContent = '点击放大 · 长按识别二维码加微信';
+  } else {
+    qrBox.innerHTML = '<span class="ad-qr-ph">💬</span><div class="ad-qr-hint">待上传</div>';
+    document.getElementById('adQrTip').textContent = '商家还没上传微信二维码';
+  }
+  const phone = SHOP_INFO.phone || '13338092733';
+  document.getElementById('adPhone').textContent = phone;
+  document.getElementById('adPhoneLine').href = 'tel:' + phone;
+  const addr = SHOP_INFO.address || '近海镇新华桥往南500米';
+  document.getElementById('adAddress').textContent = addr;
+
+  const baiduEl = document.getElementById('adNavBaidu');
+  const amapEl = document.getElementById('adNavAmap');
+
+  if(SHOP_INFO.baiduUid){
+    baiduEl.href = 'https://map.baidu.com/detail/' + SHOP_INFO.baiduUid;
+  } else if(SHOP_INFO.poiName){
+    baiduEl.href = 'https://map.baidu.com/search/' + encodeURIComponent(SHOP_INFO.poiName);
+  } else {
+    baiduEl.href = 'https://map.baidu.com/search/' + encodeURIComponent(addr);
+  }
+
+  const amapKw = SHOP_INFO.amapKeyword || SHOP_INFO.poiName || addr;
+  amapEl.href = 'https://uri.amap.com/search?keyword=' + encodeURIComponent(amapKw);
+})();
+
+function viewAdQr(){
+  const src = SHOP_INFO.wxQr || QR_CODES.wx;
+  if(!src){ toast('商家还没上传微信二维码'); return; }
+  document.getElementById('imgViewerSrc').src = src;
+  document.getElementById('imgViewer').classList.add('show');
+}
+function closeImgViewer(){ document.getElementById('imgViewer').classList.remove('show'); }
+
+/* 页面切换 */
+function showPage(id){
+  ['pageAd','pageHome','pageCart','pageOrders','pageCheckout','pageDone'].forEach(p=>{
+    document.getElementById(p).classList.toggle('show', p===id);
+  });
+}
+function startShopping(){
+  showPage('pageHome');
+  renderCats();
+  renderShopGoods();
+  switchShopTab('home');
+  window.scrollTo(0,0);
+}
+function backToAd(){
+  showPage('pageAd');
+  curOrderCode = null;
+  pendingOrderCode = null;
+}
+function switchShopTab(tab){
+  document.querySelectorAll('.shop-tabbar .stab').forEach(el=>{
+    el.classList.toggle('active', el.dataset.page===tab);
+  });
+  if(tab==='home'){
+    showPage('pageHome');
+    renderShopGoods();
+    updateCartFab();
+  } else if(tab==='cart'){
+    showPage('pageCart');
+    renderCart();
+  } else if(tab==='orders'){
+    showPage('pageOrders');
+  }
+}
+
+/* 分类 */
+const STD_CATS = ['喷花类','旋转类','升空类','玩具类','组合烟花','鞭炮类'];
+function renderCats(){
+  const cats = ['all', ...STD_CATS];
+  GOODS.forEach(g=>{
+    if(g.category && !cats.includes(g.category)) cats.push(g.category);
+  });
+  const box = document.getElementById('shopCats');
+  box.innerHTML = cats.map(c=>{
+    const label = c==='all' ? '全部' : c;
+    return `<div class="cat ${curCat===c?'active':''}" onclick="pickCat('${c}')">${label}</div>`;
+  }).join('');
+}
+function pickCat(c){
+  curCat = c;
+  renderCats();
+  renderShopGoods();
+}
+
+/* 商品网格 */
+function clearShopSearch(){
+  document.getElementById('shopSearch').value = '';
+  renderShopGoods();
+}
+function renderShopGoods(){
+  const kw = (document.getElementById('shopSearch').value||'').trim().toLowerCase();
+  let list = GOODS.slice();
+  if(curCat!=='all') list = list.filter(g=>g.category===curCat);
+  if(kw) list = list.filter(g=>
+    (g.name||'').toLowerCase().includes(kw) ||
+    (g.brand||'').toLowerCase().includes(kw) ||
+    (g.category||'').toLowerCase().includes(kw)
+  );
+
+  const grid = document.getElementById('shopGoodsGrid');
+  if(!list.length){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="ei">🎆</div>
+      <div class="et">${kw?'没有找到匹配的商品':'暂时还没有上架商品'}</div>
+      <div class="es">${kw?'换个关键词试试':'请稍后再来逛逛'}</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = list.map(g=>buildCardHtml(g)).join('');
+}
+
+function buildCardHtml(g){
+  const soldOut = (g.stock||0)<=0;
+  const hasVideo = !!(g.video||'').trim();
+  let imgHtml = g.img ? `<img src="${g.img}" alt="${g.name}" loading="lazy">` : `<span style="font-size:clamp(48px,13vw,72px);">${g.icon||'📦'}</span>`;
+  const playHtml = hasVideo ? `<div class="play-overlay" onclick="event.stopPropagation();playVideo('${g.code}')"><div class="pi">▶</div></div>` : '';
+  const footHtml = buildFootHtml(g);
+  return `
+    <div class="shop-card" data-code="${g.code}" onclick="openDetail('${g.code}')">
+      <div class="sc-img">
+        ${imgHtml}
+        ${soldOut?'<div class="sold-out">已售罄</div>':''}
+        ${playHtml}
+      </div>
+      <div class="sc-body">
+        <div class="sc-name">${g.name}</div>
+        <div class="sc-meta">${g.brand||'喜旺烟花'} · ${g.category||'精选'}</div>
+        <div class="sc-foot">${footHtml}</div>
+      </div>
+    </div>`;
+}
+function buildFootHtml(g){
+  const soldOut = (g.stock||0)<=0;
+  const cartItem = CART.find(x=>x.code===g.code);
+  const inCartQty = cartItem ? cartItem.qty : 0;
+  let html = `<div class="sc-price"><small>¥</small>${g.suggestPrice||0}</div>`;
+  if(soldOut){
+    html += `<button class="sc-add" disabled>+</button>`;
+  } else if(inCartQty > 0){
+    html += `<div class="sc-qty-ctrl">
+      <button class="minus" onclick="event.stopPropagation();quickQty('${g.code}',-1)">−</button>
+      <span class="qn">${inCartQty}</span>
+      <button class="plus" onclick="event.stopPropagation();quickQty('${g.code}',1)">+</button>
+    </div>`;
+  } else {
+    html += `<button class="sc-add" onclick="event.stopPropagation();quickAdd('${g.code}')">+</button>`;
+  }
+  return html;
+}
+function refreshCardFoot(code){
+  const card = document.querySelector(`.shop-card[data-code="${code}"]`);
+  if(!card) return;
+  const g = GOODS.find(x=>x.code===code);
+  if(!g) return;
+  const foot = card.querySelector('.sc-foot');
+  if(!foot) return;
+  foot.innerHTML = buildFootHtml(g);
+}
+function quickAdd(code){
+  const g = GOODS.find(x=>x.code===code);
+  if(!g || (g.stock||0)<=0){ SFX.error(); toast('该商品暂时无货'); return; }
+  const item = CART.find(x=>x.code===code);
+  if(item) item.qty++;
+  else CART.push({code:g.code, name:g.name, price:g.suggestPrice, icon:g.icon||'📦', img:g.img||'', qty:1});
+  saveCart();
+  updateCartBadge();
+  updateCartFab();
+  refreshCardFoot(code);
+  SFX.scan();
+  toast(`已加入购物车 · ${g.name}`);
+}
+function quickQty(code, d){
+  const item = CART.find(x=>x.code===code);
+  if(!item) return;
+  item.qty += d;
+  if(item.qty <= 0) CART = CART.filter(x=>x.code!==code);
+  saveCart();
+  updateCartBadge();
+  updateCartFab();
+  refreshCardFoot(code);
+  if(document.getElementById('pageCart').classList.contains('show')){
+    renderCart();
+  }
+  SFX.click();
+}
+function playVideo(code){
+  const g = GOODS.find(x=>x.code===code);
+  if(!g || !g.video){ return; }
+  window.open(g.video, '_blank');
+  toast('已打开视频，如被微信拦截请点右上角用浏览器打开');
+}
+
+/* 商品详情 */
+function openDetail(code){
+  const g = GOODS.find(x=>x.code===code);
+  if(!g) return;
+  curDetailCode = code;
+  curDetailQty = 1;
+  const soldOut = (g.stock||0)<=0;
+  const hasVideo = !!(g.video||'').trim();
+  document.getElementById('dtTitle').textContent = g.name;
+  let heroHtml = g.img ? `<img src="${g.img}" alt="${g.name}">` : `<span style="font-size:100px;">${g.icon||'📦'}</span>`;
+  if(hasVideo){ heroHtml += `<div class="play-overlay"><div class="pi">▶</div></div>`; }
+  const heroClick = hasVideo ? `playVideo('${g.code}')` : (g.img ? `viewImage('${g.img}')` : '');
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-hero" ${heroClick?`onclick="${heroClick}"`:''}>${heroHtml}</div>
+    <div class="detail-name">${g.name}</div>
+    <div class="detail-price-row">
+      <div class="dp"><small>¥</small>${g.suggestPrice||0}</div>
+      <span class="tag">${g.category||'精选'}</span>
+    </div>
+    <div class="detail-info-grid">
+      <div class="info-item"><div class="l">品牌</div><div class="v">${g.brand||'喜旺烟花'}</div></div>
+      <div class="info-item"><div class="l">每箱数量</div><div class="v">${g.perBox||1} 件</div></div>
+      <div class="info-item"><div class="l">库存</div><div class="v">${soldOut?'缺货':(g.stock+' 件')}</div></div>
+      <div class="info-item"><div class="l">提货方式</div><div class="v">到店自提</div></div>
+    </div>
+    <div class="detail-qty">
+      <div class="lb">购买数量</div>
+      <div class="ctrl">
+        <button onclick="dtChangeQty(-1)">−</button>
+        <span class="qn" id="dtQty">1</span>
+        <button onclick="dtChangeQty(1)">+</button>
+      </div>
+    </div>
+    <div class="detail-desc">
+      <div class="dh">💡 温馨提示</div>
+      请在下单后到店报订单号提货；到店后请联系店员核对商品、清点数量。如有疑问请当面沟通。
+    </div>`;
+  const addBtn = document.getElementById('dtAddBtn');
+  if(soldOut){
+    addBtn.disabled = true;
+    addBtn.textContent = '暂时缺货';
+  } else {
+    addBtn.disabled = false;
+    addBtn.textContent = '🛒 加入购物车';
+  }
+  document.getElementById('detailMask').classList.add('show');
+  document.getElementById('detailSheet').classList.add('show');
+}
+function closeDetail(){
+  document.getElementById('detailMask').classList.remove('show');
+  document.getElementById('detailSheet').classList.remove('show');
+  curDetailCode = null;
+  curDetailQty = 1;
+}
+function dtChangeQty(d){
+  curDetailQty += d;
+  if(curDetailQty < 1) curDetailQty = 1;
+  if(curDetailQty > 999) curDetailQty = 999;
+  document.getElementById('dtQty').textContent = curDetailQty;
+}
+function addFromDetail(){
+  if(!curDetailCode) return;
+  const g = GOODS.find(x=>x.code===curDetailCode);
+  if(!g) return;
+  const item = CART.find(x=>x.code===g.code);
+  if(item) item.qty += curDetailQty;
+  else CART.push({code:g.code, name:g.name, price:g.suggestPrice, icon:g.icon||'📦', img:g.img||'', qty:curDetailQty});
+  saveCart();
+  updateCartBadge();
+  updateCartFab();
+  SFX.scan();
+  toast(`已加入购物车 · ${g.name} ×${curDetailQty}`);
+  closeDetail();
+  refreshCardFoot(g.code);
+}
+function viewImage(src){
+  if(!src) return;
+  document.getElementById('imgViewerSrc').src = src;
+  document.getElementById('imgViewer').classList.add('show');
+}
+
+/* 购物车 */
+function updateCartBadge(){
+  const cnt = CART.reduce((s,i)=>s+i.qty,0);
+  const b = document.getElementById('cartBadge');
+  if(cnt){ b.style.display = 'flex'; b.textContent = cnt>99 ? '99+' : cnt; }
+  else { b.style.display = 'none'; }
+}
+function updateCartFab(){
+  const fab = document.getElementById('cartFab');
+  const cnt = CART.reduce((s,i)=>s+i.qty,0);
+  const cntEl = document.getElementById('cartFabCount');
+  if(cnt){
+    fab.classList.add('show');
+    cntEl.textContent = cnt>99 ? '99+' : cnt;
+  } else { fab.classList.remove('show'); }
+}
+function renderCart(){
+  const list = document.getElementById('cartList');
+  const sub = document.getElementById('cartSub');
+  const bb = document.getElementById('cartBottomBar');
+  const totalEl = document.getElementById('cartTotal');
+
+  if(!CART.length){
+    list.innerHTML = `<div class="empty">
+      <div class="ei">🛒</div>
+      <div class="et">购物车是空的</div>
+      <div class="es">快去首页挑选喜欢的烟花吧</div>
+      <div class="ebtn" onclick="switchShopTab('home')">去逛逛</div>
+    </div>`;
+    bb.style.display = 'none';
+    sub.textContent = '共 0 件';
+    return;
+  }
+  const total = CART.reduce((s,i)=>s+i.price*i.qty,0);
+  const cnt = CART.reduce((s,i)=>s+i.qty,0);
+  list.innerHTML = CART.map(item=>`
+    <div class="cart-item">
+      <div class="ci-img">${item.img?`<img src="${item.img}">`:item.icon}</div>
+      <div class="ci-info">
+        <div class="ci-name">${item.name}</div>
+        <div class="ci-price">¥<b>${item.price}</b> / 件</div>
+      </div>
+      <div class="ci-qty">
+        <button onclick="cartChangeQty('${item.code}',-1)">−</button>
+        <span class="q">${item.qty}</span>
+        <button onclick="cartChangeQty('${item.code}',1)">+</button>
+      </div>
+      <div class="ci-sub">¥${(item.price*item.qty).toLocaleString()}</div>
+    </div>`).join('');
+  bb.style.display = 'block';
+  sub.textContent = `共 ${cnt} 件`;
+  totalEl.textContent = '¥' + total.toLocaleString();
+}
+function cartChangeQty(code,d){
+  const item = CART.find(x=>x.code===code);
+  if(!item) return;
+  item.qty += d;
+  if(item.qty<=0) CART = CART.filter(x=>x.code!==code);
+  saveCart();
+  renderCart();
+  updateCartBadge();
+  updateCartFab();
+}
+function askClearCart(){
+  if(!CART.length) return;
+  document.getElementById('clearMask').classList.add('show');
+}
+function closeClearCart(){ document.getElementById('clearMask').classList.remove('show'); }
+function doClearCart(){
+  CART = [];
+  saveCart();
+  renderCart();
+  updateCartBadge();
+  updateCartFab();
+  closeClearCart();
+  toast('购物车已清空');
+}
+
+/* 结算 */
+function openCheckout(){
+  if(!CART.length){ toast('购物车是空的'); return; }
+  const total = CART.reduce((s,i)=>s+i.price*i.qty,0);
+  const cnt = CART.reduce((s,i)=>s+i.qty,0);
+  const list = document.getElementById('ckGoodsList');
+  list.innerHTML = CART.map(item=>`
+    <div class="oml-item">
+      <span class="n">${item.name}</span>
+      <span class="q">×${item.qty}</span>
+      <span class="p">¥${(item.price*item.qty).toLocaleString()}</span>
+    </div>`).join('') + `
+    <div class="oml-total">
+      <span>共计 ${cnt} 件</span>
+      <span class="t">¥${total.toLocaleString()}</span>
+    </div>`;
+  document.getElementById('ckTotal').textContent = '¥' + total.toLocaleString();
+  document.getElementById('ckName').value = '';
+  document.getElementById('ckPhone').value = '';
+  document.getElementById('ckRemark').value = '';
+  showPage('pageCheckout');
+}
+
+function submitOrder(){
+  const name = (document.getElementById('ckName').value||'').trim();
+  const phone = (document.getElementById('ckPhone').value||'').trim();
+  const remark = (document.getElementById('ckRemark').value||'').trim();
+  if(!name){ SFX.error(); toast('请填写姓名'); return; }
+  if(!/^1[3-9]\d{9}$/.test(phone)){ SFX.error(); toast('请填写正确的 11 位手机号'); return; }
+  if(!CART.length){ SFX.error(); toast('购物车是空的'); return; }
+
+  const total = CART.reduce((s,i)=>s+i.price*i.qty,0);
+  ORDERS = SafeStore.get('fw_orders', []) || [];
+  const maxNum = ORDERS.reduce((m,o)=>{
+    const n = parseInt((o.code||'').slice(1));
+    return isNaN(n) ? m : Math.max(m, n);
+  }, 0);
+  const code = 'A' + String(maxNum+1).padStart(3,'0');
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const timeStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const order = {
+    code, name, phone, amount: total, status: 'wait', method: '自提',
+    time: timeStr, remark, pickTime: '',
+    goods: CART.map(i=>({name:i.name, qty:i.qty, price:i.price}))
+  };
+  ORDERS.unshift(order);
+  saveOrders();
+  pendingOrderCode = code;
+  curOrderCode = code;
+  CART = [];
+  saveCart();
+  updateCartBadge();
+  updateCartFab();
+  document.getElementById('afterOrderMask').classList.add('show');
+  SFX.success();
+}
+
+function confirmAfterOrder(){
+  document.getElementById('afterOrderMask').classList.remove('show');
+  if(!curOrderCode) return;
+  const order = ORDERS.find(o=>o.code===curOrderCode);
+  if(!order) return;
+  renderDonePage(order);
+  showPage('pageDone');
+  SFX.click();
+}
+function renderDonePage(order){
+  document.getElementById('dnCode').textContent = order.code;
+  document.getElementById('dnName').textContent = order.name;
+  document.getElementById('dnPhone').textContent = (order.phone||'').replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+  const cnt = (order.goods||[]).reduce((s,g)=>s+g.qty,0);
+  document.getElementById('dnCount').textContent = cnt + ' 件';
+  document.getElementById('dnAmount').textContent = '¥' + (order.amount||0).toLocaleString();
+  document.getElementById('dnPickTime').textContent = order.pickTime || '待选择';
+}
+
+/* ============================================================
+   提货时间（只能选下单时间之后的时间）
+   ============================================================ */
+function openPickTime(){
+  if(!curOrderCode) return;
+  const order = ORDERS.find(o=>o.code===curOrderCode);
+  if(!order) return;
+
+  // 基准：下单时间 + 1 分钟
+  const base = parseOrderTime(order.time) || new Date();
+  minPickTime = new Date(base.getTime() + 60 * 1000);
+
+  // 更新副标题，让用户看到最低可选时间
+  const pad = n => String(n).padStart(2,'0');
+  const subEl = document.getElementById('timeSub');
+  subEl.textContent = `最早可选：${minPickTime.getFullYear()}-${pad(minPickTime.getMonth()+1)}-${pad(minPickTime.getDate())} ${pad(minPickTime.getHours())}:${pad(minPickTime.getMinutes())}`;
+
+  // 绑定联动事件
+  document.getElementById('pickYear').onchange = () => {
+    rebuildPickMonths();
+    rebuildPickDays();
+    rebuildPickHours();
+    rebuildPickMinutes();
+  };
+  document.getElementById('pickMonth').onchange = () => {
+    rebuildPickDays();
+    rebuildPickHours();
+    rebuildPickMinutes();
+  };
+  document.getElementById('pickDay').onchange = () => {
+    rebuildPickHours();
+    rebuildPickMinutes();
+  };
+  document.getElementById('pickHour').onchange = () => {
+    rebuildPickMinutes();
+  };
+
+  // 渲染
+  rebuildPickYears();
+  rebuildPickMonths();
+  rebuildPickDays();
+  rebuildPickHours();
+  rebuildPickMinutes();
+
+  document.getElementById('timeMask').classList.add('show');
+}
+
+function getMinT(){ return minPickTime || new Date(); }
+
+function rebuildPickYears(){
+  const minT = getMinT();
+  const ySel = document.getElementById('pickYear');
+  const yStart = minT.getFullYear();
+  const yEnd = yStart + 1;
+  let opts = '';
+  for(let y=yStart; y<=yEnd; y++){
+    opts += `<option value="${y}">${y} 年</option>`;
+  }
+  ySel.innerHTML = opts;
+  ySel.value = String(yStart);
+}
+
+function rebuildPickMonths(){
+  const minT = getMinT();
+  const ySel = document.getElementById('pickYear');
+  const mSel = document.getElementById('pickMonth');
+  const selYear = parseInt(ySel.value);
+  const minYear = minT.getFullYear();
+  const minMonth = minT.getMonth() + 1;
+
+  let startM = 1;
+  if(selYear === minYear) startM = minMonth;
+
+  let opts = '';
+  for(let m=startM; m<=12; m++){
+    opts += `<option value="${m}">${m} 月</option>`;
+  }
+  mSel.innerHTML = opts;
+  mSel.value = String(startM);
+}
+
+function rebuildPickDays(){
+  const minT = getMinT();
+  const y = parseInt(document.getElementById('pickYear').value);
+  const m = parseInt(document.getElementById('pickMonth').value);
+  const dSel = document.getElementById('pickDay');
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const minYear = minT.getFullYear();
+  const minMonth = minT.getMonth() + 1;
+  const minDay = minT.getDate();
+
+  let startD = 1;
+  if(y === minYear && m === minMonth) startD = minDay;
+
+  let opts = '';
+  for(let d=startD; d<=daysInMonth; d++){
+    opts += `<option value="${d}">${d} 日</option>`;
+  }
+  dSel.innerHTML = opts;
+  dSel.value = String(startD);
+}
+
+function rebuildPickHours(){
+  const minT = getMinT();
+  const y = parseInt(document.getElementById('pickYear').value);
+  const m = parseInt(document.getElementById('pickMonth').value);
+  const d = parseInt(document.getElementById('pickDay').value);
+  const hSel = document.getElementById('pickHour');
+  const minYear = minT.getFullYear();
+  const minMonth = minT.getMonth() + 1;
+  const minDay = minT.getDate();
+  const minHour = minT.getHours();
+
+  const isSameDay = (y === minYear && m === minMonth && d === minDay);
+  let startH = 8;
+  if(isSameDay) startH = Math.max(8, minHour);
+
+  let opts = '';
+  for(let h=startH; h<=21; h++){
+    opts += `<option value="${h}">${String(h).padStart(2,'0')} 点</option>`;
+  }
+  if(!opts){
+    opts = `<option value="8">08 点</option>`;
+  }
+  hSel.innerHTML = opts;
+  hSel.value = String(startH);
+}
+
+function rebuildPickMinutes(){
+  const minT = getMinT();
+  const y = parseInt(document.getElementById('pickYear').value);
+  const m = parseInt(document.getElementById('pickMonth').value);
+  const d = parseInt(document.getElementById('pickDay').value);
+  const h = parseInt(document.getElementById('pickHour').value);
+  const miSel = document.getElementById('pickMinute');
+  const minYear = minT.getFullYear();
+  const minMonth = minT.getMonth() + 1;
+  const minDay = minT.getDate();
+  const minHour = minT.getHours();
+  const minMin = minT.getMinutes();
+
+  const isSameDateTime = (y === minYear && m === minMonth && d === minDay && h === minHour);
+
+  let opts = '';
+  [0,15,30,45].forEach(mm=>{
+    if(!isSameDateTime || mm > minMin){
+      opts += `<option value="${mm}">${String(mm).padStart(2,'0')} 分</option>`;
+    }
+  });
+
+  if(!opts){
+    // 本小时全被过滤，退回到 [0,15,30,45] 全部可选（一般是边界情况）
+    [0,15,30,45].forEach(mm=>{
+      opts += `<option value="${mm}">${String(mm).padStart(2,'0')} 分</option>`;
+    });
+  }
+
+  miSel.innerHTML = opts;
+  miSel.value = miSel.options[0].value;
+}
+
+function closePickTime(){ document.getElementById('timeMask').classList.remove('show'); }
+
+function savePickTime(){
+  if(!curOrderCode) return;
+  const order = ORDERS.find(o=>o.code===curOrderCode);
+  if(!order) return;
+  const y = document.getElementById('pickYear').value;
+  const m = String(document.getElementById('pickMonth').value).padStart(2,'0');
+  const d = String(document.getElementById('pickDay').value).padStart(2,'0');
+  const h = String(document.getElementById('pickHour').value).padStart(2,'0');
+  const mi = String(document.getElementById('pickMinute').value).padStart(2,'0');
+  order.pickTime = `${y}-${m}-${d} ${h}:${mi}`;
+  saveOrders();
+  document.getElementById('dnPickTime').textContent = order.pickTime;
+  closePickTime();
+  SFX.success();
+  toast('提货时间已设置');
+}
+
+/* 修改提货人信息 */
+function openEditInfo(){
+  if(!curOrderCode) return;
+  const order = ORDERS.find(o=>o.code===curOrderCode);
+  if(!order) return;
+  document.getElementById('editName').value = order.name || '';
+  document.getElementById('editPhone').value = order.phone || '';
+  document.getElementById('editMask').classList.add('show');
+}
+function closeEditInfo(){ document.getElementById('editMask').classList.remove('show'); }
+function saveEditInfo(){
+  if(!curOrderCode) return;
+  const order = ORDERS.find(o=>o.code===curOrderCode);
+  if(!order) return;
+  const name = (document.getElementById('editName').value||'').trim();
+  const phone = (document.getElementById('editPhone').value||'').trim();
+  if(!name){ SFX.error(); toast('请填写姓名'); return; }
+  if(!/^1[3-9]\d{9}$/.test(phone)){ SFX.error(); toast('请填写正确的 11 位手机号'); return; }
+  order.name = name;
+  order.phone = phone;
+  saveOrders();
+  document.getElementById('dnName').textContent = name;
+  document.getElementById('dnPhone').textContent = phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+  closeEditInfo();
+  SFX.success();
+  toast('提货人信息已更新');
+}
+
+/* 我的订单 */
+function queryMyOrders(){
+  const phone = (document.getElementById('orderPhone').value||'').trim();
+  if(!/^1[3-9]\d{9}$/.test(phone)){ SFX.error(); toast('请输入正确的 11 位手机号'); return; }
+  ORDERS = SafeStore.get('fw_orders', []) || [];
+  const mine = ORDERS.filter(o=>o.phone===phone);
+  const box = document.getElementById('ordersList');
+  if(!mine.length){
+    box.innerHTML = `<div class="empty">
+      <div class="ei">📭</div>
+      <div class="et">没有找到订单</div>
+      <div class="es">请确认手机号是否与下单时一致</div>
+    </div>`;
+    return;
+  }
+  const STATUS = {
+    wait:{t:'待付款',c:'st-wait'}, paid:{t:'已付款',c:'st-paid'},
+    packed:{t:'已配货',c:'st-packed'}, done:{t:'已完成',c:'st-done'},
+    cancel:{t:'已取消',c:'st-cancel'}
+  };
+  box.innerHTML = mine.map(o=>{
+    const st = STATUS[o.status] || STATUS.wait;
+    return `
+      <div class="ocard" id="shop-oc-${o.code}">
+        <div class="oc-head" onclick="toggleShopOrder('${o.code}')">
+          <div class="oc-code">${o.code}</div>
+          <div class="oc-mid"><div class="t">${o.time}${o.pickTime?` · 提货 ${o.pickTime}`:''}</div></div>
+          <div class="oc-right">
+            <div class="oc-amount">¥${(o.amount||0).toLocaleString()}</div>
+            <span class="oc-status ${st.c}">${st.t}</span>
+          </div>
+        </div>
+        <div class="oc-body">
+          <h4>商品明细</h4>
+          <div class="oc-goods">
+            ${(o.goods||[]).map(g=>`
+              <div class="oc-good">
+                <span class="n">${g.name}</span>
+                <span class="q">×${g.qty}</span>
+                <span class="p">¥${(g.price*g.qty).toLocaleString()}</span>
+              </div>`).join('')}
+          </div>
+          ${o.remark?`<h4>备注</h4><div class="oc-good" style="background:#fff;border-radius:10px;">${o.remark}</div>`:''}
+        </div>
+      </div>`;
+  }).join('');
+}
+function toggleShopOrder(code){
+  document.getElementById('shop-oc-'+code).classList.toggle('open');
+}
+
+/* 全局按钮音效 */
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('button, .stab, .cat, .shop-card, .sc-add, .sc-qty-ctrl button, .pick-up, .ad-start, .ad-nav-btn, .ad-line, .ad-qr-box, .cart-fab');
+  if(!btn) return;
+  if(btn.disabled) return;
+  SFX.click();
+}, true);
+
+document.getElementById('detailSheet').addEventListener('click', e=>e.stopPropagation());
+document.querySelectorAll('.time-box').forEach(b=>{
+  b.addEventListener('click', e=>e.stopPropagation());
+});
+document.querySelectorAll('.confirm-mask').forEach(m=>{
+  m.addEventListener('click', function(e){
+    if(e.target === m){
+      if(m.id==='timeMask') closePickTime();
+      else if(m.id==='editMask') closeEditInfo();
+      else if(m.id==='clearMask') closeClearCart();
+    }
+  });
+});
+
+(function(){ updateCartBadge(); updateCartFab(); })();
+</script>
+</body>
+</html>
