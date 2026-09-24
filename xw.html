@@ -290,7 +290,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .gcard{background:#fff;border-radius:10px;border:1px solid var(--line);overflow:hidden;
   display:flex;flex-direction:column;transition:box-shadow .15s;}
 .gcard:hover{box-shadow:0 4px 14px rgba(43,31,26,.08);}
-/* 图片高度从 5:2 改成 5:4，正好两倍 */
 .gcard .gc-img{aspect-ratio:5/4;background:linear-gradient(135deg,#fdf6f0,#ffe8dd);
   display:flex;align-items:center;justify-content:center;font-size:clamp(40px,10vw,60px);
   position:relative;overflow:hidden;}
@@ -1141,7 +1140,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
       </div>
     </div>
 
-    <!-- 商品图片上传 -->
     <div class="form-row">
       <label>商品图片 <span class="hint">选填</span></label>
       <div class="img-upload-block">
@@ -1565,7 +1563,6 @@ function backToLanding(){
   document.getElementById('landing').classList.add('show');
 }
 
-/* 密码管理 */
 function openPwdManager(){
   document.getElementById('pwdCur').value='';
   document.getElementById('pwdNew').value='';
@@ -1914,4 +1911,741 @@ function renderMovements(){
   pager.innerHTML = `
     <button ${movPage<=1?'disabled':''} onclick="movGo(${movPage-1})">上一页</button>
     <span class="pg-info">${movPage} / ${pages}</span>
-    <button ${movPage>=pages?'disabled':''} onclick="movGo
+    <button ${movPage>=pages?'disabled':''} onclick="movGo(${movPage+1})">下一页</button>
+  `;
+}
+function movGo(p){
+  movPage = p;
+  renderMovements();
+}
+
+function openLowStock(){
+  const list=GOODS.filter(g=>g.stock<=5).sort((a,b)=>a.stock-b.stock);
+  document.getElementById('lowStockTitle').textContent=
+    list.length ? `⚠️ 库存预警 · ${list.length} 个商品` : '✅ 库存正常';
+  const box=document.getElementById('lowStockList');
+  if(!list.length){
+    box.innerHTML=`<div class="ll-empty"><div class="ei">✅</div>
+      <div class="et">所有商品库存充足</div>
+      <div class="es">没有低于 5 件的商品</div></div>`;
+  } else {
+    box.innerHTML=list.map(g=>{
+      const cls = g.stock<=0?'zero':'warn';
+      return `
+        <div class="ll-item">
+          <div class="ll-icon">${g.icon||'📦'}</div>
+          <div class="ll-info"><div class="ll-name">${g.name}</div>
+            <div class="ll-code">${g.code}</div></div>
+          <div class="ll-stock ${cls}">${g.stock}</div>
+        </div>`;
+    }).join('');
+  }
+  document.getElementById('lowStockMask').classList.add('show');
+  document.getElementById('lowStockSheet').classList.add('show');
+}
+function closeLowStock(){
+  document.getElementById('lowStockMask').classList.remove('show');
+  document.getElementById('lowStockSheet').classList.remove('show');
+}
+
+function openGoodsForm(code){
+  editingCode=code||null;
+  document.getElementById('sheetTitle').textContent=code?'编辑商品':'新建商品';
+  if(code){
+    const g=GOODS.find(x=>x.code===code);
+    document.getElementById('codeInputRow').style.display='none';
+    document.getElementById('codeDisplayRow').style.display='block';
+    document.getElementById('fCodeDisplay').textContent=g.code;
+    document.getElementById('fName').value=g.name;
+    document.getElementById('fBrand').value=g.brand||'';
+    document.getElementById('fCategory').value=g.category||'';
+    document.getElementById('fPerBox').value=g.perBox||1;
+    document.getElementById('fBoxPrice').value=g.boxPrice||'';
+    document.getElementById('fUnitPrice').value=g.unitPrice||'';
+    document.getElementById('fSuggestPrice').value=g.suggestPrice||'';
+    document.getElementById('fVideo').value=g.video||'';
+    editingImg = g.img || '';
+  } else {
+    document.getElementById('codeInputRow').style.display='block';
+    document.getElementById('codeDisplayRow').style.display='none';
+    document.getElementById('fCode').value='';
+    ['fName','fBrand','fCategory','fBoxPrice','fUnitPrice','fSuggestPrice','fVideo'].forEach(id=>{
+      document.getElementById(id).value='';
+    });
+    document.getElementById('fPerBox').value=1;
+    editingImg = '';
+  }
+  renderGoodsImgPreview();
+  document.getElementById('sheetMask').classList.add('show');
+  document.getElementById('goodsSheet').classList.add('show');
+  if(!code){
+    setTimeout(()=>{
+      const inp = document.getElementById('fCode');
+      if(inp) inp.focus();
+    }, 200);
+  }
+}
+function editGoods(code){openGoodsForm(code);}
+function closeSheet(){
+  document.getElementById('sheetMask').classList.remove('show');
+  document.getElementById('goodsSheet').classList.remove('show');
+}
+function openScanInput(){
+  const inp=document.getElementById('fCode');
+  if(inp) inp.focus();
+  toast('请用扫码枪扫商品二维码');
+}
+function autoCalcUnitPrice(){
+  const perBox=parseFloat(document.getElementById('fPerBox').value)||0;
+  const boxPrice=parseFloat(document.getElementById('fBoxPrice').value)||0;
+  const el=document.getElementById('fUnitPrice');
+  if(perBox>0 && boxPrice>0) el.value=(boxPrice/perBox).toFixed(2);
+  else el.value='';
+}
+function saveGoods(){
+  const name=document.getElementById('fName').value.trim();
+  const suggestPrice=parseFloat(document.getElementById('fSuggestPrice').value);
+  if(!name){toast('请填写商品名称');return;}
+  if(!suggestPrice){toast('请填写建议零售价');return;}
+  const data={
+    name,
+    brand:document.getElementById('fBrand').value.trim(),
+    category:document.getElementById('fCategory').value,
+    perBox:parseInt(document.getElementById('fPerBox').value)||1,
+    boxPrice:parseFloat(document.getElementById('fBoxPrice').value)||0,
+    unitPrice:parseFloat(document.getElementById('fUnitPrice').value)||0,
+    suggestPrice,
+    video:document.getElementById('fVideo').value.trim(),
+    img: editingImg || ''
+  };
+  if(editingCode){
+    const idx=GOODS.findIndex(x=>x.code===editingCode);
+    if(idx>=0) GOODS[idx]={...GOODS[idx],...data,code:editingCode};
+    toast('商品已更新');
+  } else {
+    const code=document.getElementById('fCode').value.trim();
+    if(!code){toast('请扫码或输入商品二维码');return;}
+    if(GOODS.find(x=>x.code===code)){toast('该二维码已存在');return;}
+    GOODS.push({...data,code,stock:0,icon:'📦',totalIn:0,totalOut:0});
+    toast('商品已新建');
+  }
+  saveGoodsData();renderGoods();renderStats();closeSheet();
+}
+
+function pickGoodsImage(){
+  document.getElementById('fImgInput').click();
+}
+function handleGoodsImageUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ toast('请选择图片文件'); return; }
+  if(file.size > 6*1024*1024){ toast('图片不能超过 6MB'); return; }
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      const maxSize = 900;
+      let w = img.width, h = img.height;
+      if(w > maxSize || h > maxSize){
+        if(w > h){ h = Math.round(h*maxSize/w); w = maxSize; }
+        else { w = Math.round(w*maxSize/h); h = maxSize; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      editingImg = dataUrl;
+      renderGoodsImgPreview();
+      toast('图片已上传');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function clearGoodsImage(){
+  if(!editingImg) return;
+  editingImg = '';
+  renderGoodsImgPreview();
+  toast('已移除图片');
+}
+function renderGoodsImgPreview(){
+  const el = document.getElementById('fImgPreview');
+  if(!el) return;
+  if(editingImg){
+    el.innerHTML = `<img src="${editingImg}"><div class="tip-badge">点击更换</div>`;
+  } else {
+    el.innerHTML = `<span class="empty-ico">📦</span><div class="tip-badge">点击上传</div>`;
+  }
+}
+
+function initStaff(){
+  const now=new Date();
+  document.getElementById('staffDate').textContent=
+    `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+  staffPage=1;
+  renderStaffRecent();focusStaff();
+}
+function focusStaff(){
+  setTimeout(()=>{
+    const el=document.getElementById('staffInput');
+    if(el)el.focus();
+  },100);
+}
+function handleStaffScan(e){
+  if(e.key!=='Enter')return;
+  const code=e.target.value.trim();e.target.value='';
+  if(!code)return;
+  if(code===lastScan && Date.now()-lastScanTime<800)return;
+  lastScan=code;lastScanTime=Date.now();
+  handleStaffCode(code);
+}
+function handleStaffCode(code){
+  document.getElementById('staffScanBox').classList.add('active');
+  const g=GOODS.find(x=>x.code===code);
+  if(g) showStaffResult(g);
+  else { toast('未找到商品：'+code); focusStaff(); }
+}
+function showStaffResult(g){
+  const sc=g.stock<=0?'red':(g.stock<=5?'':'green');
+  document.getElementById('staffResult').innerHTML=`
+    <div class="staff-result">
+      <div class="sr-head">
+        <div class="sr-icon">${g.icon||'📦'}</div>
+        <div class="sr-title">
+          <div class="n">${g.name}</div>
+          <div class="s">${g.category||'未分类'}</div>
+        </div>
+      </div>
+      <div class="sr-stock">
+        <div class="n ${sc}">${g.stock}</div>
+        <div class="l"><b>当前库存</b>件</div>
+      </div>
+      <div class="staff-op">
+        <div class="op-row">
+          <div class="op-label">
+            <span class="op-prefix">入库</span>
+            <input type="number" id="inQty" placeholder="输入数量" min="1" autocomplete="off">
+          </div>
+          <button class="in" onclick="askStaffStock('${g.code}',1)">入库</button>
+        </div>
+        <div class="op-row">
+          <div class="op-label">
+            <span class="op-prefix">出库</span>
+            <input type="number" id="outQty" placeholder="输入数量" min="1" autocomplete="off">
+          </div>
+          <button class="out" onclick="askStaffStock('${g.code}',-1)">出库</button>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(()=>{
+    const el=document.getElementById('inQty');
+    if(el)el.focus();
+  }, 100);
+}
+function askStaffStock(code, dir){
+  const g=GOODS.find(x=>x.code===code);if(!g)return;
+  const isIn = dir > 0;
+  const inputId = isIn ? 'inQty' : 'outQty';
+  const input = document.getElementById(inputId);
+  const qty = parseInt(input.value)||0;
+  if(!qty || qty<=0){ toast('请输入数量'); input.focus(); return; }
+  const actionText = isIn ? '入库' : '出库';
+  document.getElementById('confirmIcon').textContent = isIn ? '📥' : '📤';
+  document.getElementById('confirmIcon').className = 'icon ' + (isIn ? 'in' : 'out');
+  document.getElementById('confirmTitle').textContent = `确认${actionText}`;
+  document.getElementById('confirmInfo').innerHTML =
+    `<span class="n">${g.name}</span><br>本次${actionText} <b>${qty}</b> 件<br>是否确认？`;
+  document.getElementById('confirmOk').classList.toggle('red', !isIn);
+  pendingStaffAction = { code, qty: isIn ? qty : -qty };
+  document.getElementById('confirmMask').classList.add('show');
+}
+function closeStaffConfirm(){
+  pendingStaffAction = null;
+  document.getElementById('confirmMask').classList.remove('show');
+  focusStaff();
+}
+function executeStaffConfirm(){
+  if(!pendingStaffAction) return;
+  const { code, qty } = pendingStaffAction;
+  document.getElementById('confirmMask').classList.remove('show');
+  pendingStaffAction = null;
+  staffStock(code, qty);
+}
+function staffStock(code,n){
+  const g=GOODS.find(x=>x.code===code);if(!g)return;
+  g.stock+=n;if(g.stock<0)g.stock=0;
+  if(n>0) g.totalIn=(g.totalIn||0)+n;
+  else g.totalOut=(g.totalOut||0)+Math.abs(n);
+  addMovement(g.name, g.code, n>0?'in':'out', Math.abs(n));
+  saveGoodsData();
+  const now=new Date();
+  const pad=x=>String(x).padStart(2,'0');
+  STAFF_RECENT.unshift({
+    name:g.name, delta:n,
+    time:`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+  });
+  saveStaffRecent();
+  staffPage=1;
+  const actionText = n>0 ? '入库' : '出库';
+  const absN = Math.abs(n);
+  document.getElementById('staffResult').innerHTML=`
+    <div class="staff-success">
+      <div class="ico">✓</div>
+      <div class="txt">
+        <div class="t1">${g.name} ${actionText}成功</div>
+        <div class="t2">${actionText} ${absN} 件 · 当前库存 ${g.stock} 件</div>
+      </div>
+    </div>
+    <div class="staff-result">
+      <div class="sr-head">
+        <div class="sr-icon">${g.icon||'📦'}</div>
+        <div class="sr-title">
+          <div class="n">${g.name}</div>
+          <div class="s">${g.category||'未分类'}</div>
+        </div>
+      </div>
+      <div class="sr-stock">
+        <div class="n green">${g.stock}</div>
+        <div class="l"><b>当前库存</b>件</div>
+      </div>
+      <div class="staff-op">
+        <div class="op-row">
+          <div class="op-label"><span class="op-prefix">入库</span>
+            <input type="number" id="inQty" placeholder="输入数量" min="1" autocomplete="off"></div>
+          <button class="in" onclick="askStaffStock('${g.code}',1)">入库</button>
+        </div>
+        <div class="op-row">
+          <div class="op-label"><span class="op-prefix">出库</span>
+            <input type="number" id="outQty" placeholder="输入数量" min="1" autocomplete="off"></div>
+          <button class="out" onclick="askStaffStock('${g.code}',-1)">出库</button>
+        </div>
+      </div>
+    </div>`;
+  renderStaffRecent();
+  toast(`${g.name} ${actionText} ${absN} 件，当前 ${g.stock}`);
+  focusStaff();
+}
+function renderStaffRecent(){
+  const wrap=document.getElementById('staffRecent');
+  const pager=document.getElementById('staffPager');
+  if(!STAFF_RECENT.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  const total = STAFF_RECENT.length;
+  const pages = Math.ceil(total / STAFF_PER_PAGE);
+  if(staffPage > pages) staffPage = pages;
+  const start = (staffPage-1)*STAFF_PER_PAGE;
+  const slice = STAFF_RECENT.slice(start, start + STAFF_PER_PAGE);
+  document.getElementById('staffRecentBody').innerHTML=slice.map(r=>`
+    <div class="ri">
+      <span class="n">${r.name}</span>
+      <span class="d ${r.delta>0?'in':'out'}">${r.delta>0?'+':''}${r.delta}</span>
+      <span class="t">${r.time}</span>
+    </div>`).join('');
+  pager.innerHTML = `
+    <button ${staffPage<=1?'disabled':''} onclick="staffGo(${staffPage-1})">上一页</button>
+    <span class="pg-info">${staffPage} / ${pages}</span>
+    <button ${staffPage>=pages?'disabled':''} onclick="staffGo(${staffPage+1})">下一页</button>
+  `;
+}
+function staffGo(p){
+  staffPage = p;
+  renderStaffRecent();
+}
+function clearStaffRecent(){
+  STAFF_RECENT=[];saveStaffRecent();staffPage=1;renderStaffRecent();
+}
+
+let cameraScanner = null;
+let cameraStarting = false;
+let cameraMode = 'staff';
+
+function openCameraForForm(){
+  startCameraScan('form');
+}
+
+function startCameraScan(mode){
+  cameraMode = mode || 'staff';
+  if(typeof Html5Qrcode === 'undefined'){
+    toast('相机模块未加载，请检查网络后刷新');
+    return;
+  }
+  document.getElementById('cameraModal').classList.add('show');
+  if(cameraStarting) return;
+  cameraStarting = true;
+  setTimeout(async ()=>{
+    try{
+      if(!cameraScanner){
+        cameraScanner = new Html5Qrcode("cameraReader");
+      }
+      await cameraScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 240, height: 240 } },
+        (decodedText) => {
+          stopCameraScan().then(()=>{
+            if(!decodedText) return;
+            const code = decodedText.trim();
+            if(!code) return;
+            if(cameraMode === 'form'){
+              const inp = document.getElementById('fCode');
+              if(inp){
+                inp.value = code;
+                inp.focus();
+              }
+              toast('已录入二维码：' + code);
+            } else if(cameraMode === 'pos'){
+              handlePosCode(code);
+            } else {
+              handleStaffCode(code);
+            }
+          });
+        },
+        (err) => { /* 忽略每帧未识别 */ }
+      );
+    } catch(e){
+      console.error(e);
+      toast('相机启动失败，请确认已允许相机权限');
+      document.getElementById('cameraModal').classList.remove('show');
+    } finally {
+      cameraStarting = false;
+    }
+  }, 250);
+}
+async function stopCameraScan(){
+  document.getElementById('cameraModal').classList.remove('show');
+  if(cameraScanner){
+    try{
+      const state = cameraScanner.getState();
+      if(state === 2){ await cameraScanner.stop(); }
+      await cameraScanner.clear();
+    }catch(e){ /* ignore */ }
+  }
+}
+
+function handlePosCode(code){
+  const g = GOODS.find(x=>x.code===code);
+  if(!g){ toast('未找到商品：'+code); return; }
+  const item = CART.find(x=>x.code===code);
+  if(item) item.qty++;
+  else CART.push({code:g.code, name:g.name, price:g.suggestPrice, icon:g.icon, qty:1});
+  renderPos();
+  focusPosInput();
+  toast('已加入购物车：'+g.name);
+}
+
+const STATUS={wait:{t:'待付款',c:'st-wait'},paid:{t:'已付款',c:'st-paid'},
+  packed:{t:'已配货',c:'st-packed'},done:{t:'已完成',c:'st-done'},cancel:{t:'已取消',c:'st-cancel'}};
+function renderOrders(){
+  const counts={all:ORDERS.length,
+    wait:ORDERS.filter(o=>o.status==='wait').length,
+    paid:ORDERS.filter(o=>o.status==='paid').length,
+    packed:ORDERS.filter(o=>o.status==='packed').length,
+    done:ORDERS.filter(o=>o.status==='done').length};
+  const tabs=[{k:'all',l:'全部'},{k:'wait',l:'待付款'},{k:'paid',l:'待配货'},
+    {k:'packed',l:'已配货'},{k:'done',l:'已完成'}];
+  document.getElementById('orderTabs').innerHTML=tabs.map(t=>`
+    <div class="otab ${orderFilter===t.k?'active':''}" onclick="pickOrderTab('${t.k}')">
+      ${t.l}<span class="cnt">${counts[t.k]||0}</span>
+    </div>`).join('');
+  const kw=(document.getElementById('orderSearch').value||'').trim().toLowerCase();
+  let list=ORDERS.slice();
+  if(orderFilter!=='all')list=list.filter(o=>o.status===orderFilter);
+  if(kw)list=list.filter(o=>o.code.toLowerCase().includes(kw)||
+    (o.phone||'').includes(kw)||o.name.toLowerCase().includes(kw));
+  const wrap=document.getElementById('orderList');
+  const pager=document.getElementById('orderPager');
+  if(!list.length){
+    wrap.innerHTML=`<div class="empty" style="grid-column:1/-1;">
+      <div class="ei">📭</div><div class="et">没有匹配的订单</div></div>`;
+    pager.innerHTML='';
+    return;
+  }
+  const total=list.length;
+  const pages=Math.ceil(total/PER_PAGE);
+  if(orderPage>pages) orderPage=pages;
+  const start=(orderPage-1)*PER_PAGE;
+  const slice=list.slice(start,start+PER_PAGE);
+  wrap.innerHTML=slice.map(o=>{
+    const st=STATUS[o.status];
+    const goodsText=o.goods.map(g=>`${g.name}×${g.qty}`).join('、');
+    return `
+      <div class="ocard" id="oc-${o.code}">
+        <div class="oc-head" onclick="toggleOrder('${o.code}')">
+          <div class="oc-code">${o.code}</div>
+          <div class="oc-mid">
+            <div class="n">${o.name} · ${goodsText}</div>
+            <div class="p">${o.phone||'现场客户'} · ${o.time}</div>
+          </div>
+          <div class="oc-right">
+            <div class="oc-amount">¥${o.amount.toLocaleString()}</div>
+            <span class="oc-status ${st.c}">${st.t}</span>
+          </div>
+        </div>
+        <div class="oc-detail">
+          <div class="od-sec"><h4>商品明细</h4>
+            <div class="od-goods">
+              ${o.goods.map(g=>`<div class="od-good">
+                <span>${g.name}</span>
+                <span>${g.qty}件 × ¥${g.price} = ¥${g.qty*g.price}</span>
+              </div>`).join('')}
+              <div class="od-good total"><span>合计</span>
+                <span>¥${o.amount.toLocaleString()}</span></div>
+            </div>
+          </div>
+          <div class="od-actions">
+            ${o.status==='wait'?`<button class="primary" onclick="changeStatus('${o.code}','paid')">✅ 确认收款</button>`:''}
+            ${o.status==='paid'?`<button class="success" onclick="changeStatus('${o.code}','packed')">📦 标记已配货</button>`:''}
+            ${o.status==='packed'?`<button class="success" onclick="changeStatus('${o.code}','done')">🎉 标记已取货</button>`:''}
+            ${o.status!=='done'&&o.status!=='cancel'?`<button class="danger" onclick="changeStatus('${o.code}','cancel')">取消</button>`:''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+  pager.innerHTML = `
+    <button ${orderPage<=1?'disabled':''} onclick="orderGo(${orderPage-1})">上一页</button>
+    <span class="pg-info">${orderPage} / ${pages}</span>
+    <button ${orderPage>=pages?'disabled':''} onclick="orderGo(${orderPage+1})">下一页</button>
+  `;
+}
+function orderGo(p){
+  orderPage=p;
+  renderOrders();
+}
+function pickOrderTab(k){orderFilter=k;orderPage=1;renderOrders();}
+function toggleOrder(code){document.getElementById('oc-'+code).classList.toggle('open');}
+function changeStatus(code,status){
+  const o=ORDERS.find(x=>x.code===code);if(!o)return;
+  o.status=status;saveOrders();renderOrders();renderStats();updateBadges();
+  const map={paid:'已确认收款',packed:'已标记配货',done:'订单已完成',cancel:'订单已取消'};
+  toast(map[status]||'已更新');
+}
+
+function renderQRSettings(){
+  const pw=document.getElementById('previewWx');
+  pw.innerHTML = QR_CODES.wx ? `<img src="${QR_CODES.wx}">` : '💚';
+  const pa=document.getElementById('previewAli');
+  pa.innerHTML = QR_CODES.ali ? `<img src="${QR_CODES.ali}">` : '💙';
+  const pl=document.getElementById('previewLogo');
+  pl.innerHTML = QR_CODES.logo ? `<img src="${QR_CODES.logo}">` : '🎆';
+}
+function uploadQR(type){
+  const map={wx:'fileWx',ali:'fileAli',logo:'fileLogo'};
+  document.getElementById(map[type]).click();
+}
+function handleUploadQR(e, type){
+  const file=e.target.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){toast('请选择图片文件');return;}
+  if(file.size > 3*1024*1024){toast('图片不能超过 3MB');return;}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const maxSize = (type==='logo') ? 400 : 600;
+      let w=img.width, h=img.height;
+      if(w>maxSize || h>maxSize){
+        if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}
+        else{w=Math.round(w*maxSize/h);h=maxSize;}
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl=canvas.toDataURL('image/jpeg',0.85);
+      QR_CODES[type]=dataUrl;
+      saveQRCodes();renderQRSettings();
+      if(type==='logo') document.getElementById('logoBox').innerHTML=`<img src="${dataUrl}">`;
+      toast(type==='logo'?'店铺图标已保存':'收款码已保存');
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+function removeQR(type){
+  if(!QR_CODES[type])return;
+  if(!confirm('确定移除？'))return;
+  QR_CODES[type]='';saveQRCodes();renderQRSettings();
+  if(type==='logo'){document.getElementById('logoBox').innerHTML='🎆';}
+  toast('已移除');
+}
+
+function enterPos(){
+  ['landing','adminApp','staffApp'].forEach(id=>{
+    document.getElementById(id).classList.remove('show');
+  });
+  document.getElementById('posView').classList.add('show');
+  CART=[];renderPos();focusPosInput();
+}
+function focusPosInput(){
+  setTimeout(()=>{
+    const el=document.getElementById('posInput');
+    if(el)el.focus();
+  },100);
+}
+function handlePosScan(e){
+  if(e.key!=='Enter')return;
+  const code=e.target.value.trim();e.target.value='';
+  if(!code)return;
+  e.target.classList.remove('flash');
+  void e.target.offsetWidth;
+  e.target.classList.add('flash');
+  if(code===lastScan && Date.now()-lastScanTime<800)return;
+  lastScan=code;lastScanTime=Date.now();
+  const g=GOODS.find(x=>x.code===code);
+  if(!g){toast('未找到商品：'+code);focusPosInput();return;}
+  const item=CART.find(x=>x.code===code);
+  if(item)item.qty++;
+  else CART.push({code:g.code,name:g.name,price:g.suggestPrice,icon:g.icon,qty:1});
+  renderPos();focusPosInput();
+}
+function renderPos(){
+  const list=document.getElementById('posList');
+  if(!CART.length){
+    list.innerHTML=`<div class="pos-empty">
+      <div class="ei">🛒</div><div class="et">购物车是空的</div>
+      <div class="es">扫码枪扫商品二维码开始收银</div></div>`;
+    document.getElementById('posTotal').textContent='¥0';
+    document.getElementById('posCount').textContent='共 0 件';
+    document.getElementById('payBtn').disabled=true;
+    return;
+  }
+  list.innerHTML=CART.map(item=>`
+    <div class="pos-item">
+      <div class="pi-icon">${item.icon}</div>
+      <div class="pi-info">
+        <div class="pi-name">${item.name}</div>
+        <div class="pi-price">¥<b>${item.price}</b> / 件</div>
+      </div>
+      <div class="pi-qty">
+        <button onclick="changePosQty('${item.code}',-1)">−</button>
+        <span class="q">${item.qty}</span>
+        <button onclick="changePosQty('${item.code}',1)">+</button>
+      </div>
+      <div class="pi-sub">¥${(item.price*item.qty).toLocaleString()}</div>
+    </div>
+  `).join('');
+  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
+  const count=CART.reduce((s,i)=>s+i.qty,0);
+  document.getElementById('posTotal').textContent='¥'+total.toLocaleString();
+  document.getElementById('posCount').textContent='共 '+count+' 件';
+  document.getElementById('payBtn').disabled=false;
+}
+function changePosQty(code,d){
+  const item=CART.find(x=>x.code===code);if(!item)return;
+  item.qty+=d;
+  if(item.qty<=0)CART=CART.filter(x=>x.code!==code);
+  renderPos();focusPosInput();
+}
+function clearPos(){
+  if(!CART.length)return;
+  if(!confirm('确定清空当前收银吗？'))return;
+  CART=[];renderPos();focusPosInput();
+}
+function showPayOptions(){
+  if(!CART.length)return;
+  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
+  document.getElementById('payAmt').textContent='¥'+total.toLocaleString();
+  document.getElementById('payMask').classList.add('show');
+}
+function closePayOptions(){
+  document.getElementById('payMask').classList.remove('show');
+  focusPosInput();
+}
+function payCash(){
+  closePayOptions();
+  completeOrder('现金支付');
+}
+function payOnline(){
+  closePayOptions();
+  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
+  document.getElementById('qrShowAmt').textContent='¥'+total.toLocaleString();
+  const boxWx=document.getElementById('qrBoxWx');
+  const noWx=document.getElementById('noWx');
+  if(QR_CODES.wx){
+    boxWx.innerHTML=`<img src="${QR_CODES.wx}">`;
+    noWx.style.display='none';
+  } else {
+    boxWx.innerHTML=`<div class="ph">💚</div>`;
+    noWx.style.display='block';
+  }
+  const boxAli=document.getElementById('qrBoxAli');
+  const noAli=document.getElementById('noAli');
+  if(QR_CODES.ali){
+    boxAli.innerHTML=`<img src="${QR_CODES.ali}">`;
+    noAli.style.display='none';
+  } else {
+    boxAli.innerHTML=`<div class="ph">💙</div>`;
+    noAli.style.display='block';
+  }
+  document.getElementById('qrShow').classList.add('show');
+}
+function closeQrShow(){
+  document.getElementById('qrShow').classList.remove('show');
+  CART=[];
+  renderPos();
+  focusPosInput();
+}
+function backFromQr(){
+  document.getElementById('qrShow').classList.remove('show');
+  CART=[];
+  renderPos();
+  focusPosInput();
+}
+function confirmPaid(){
+  document.getElementById('qrShow').classList.remove('show');
+  completeOrder('线上支付');
+}
+function completeOrder(payMethod){
+  if(!CART.length)return;
+  const total=CART.reduce((s,i)=>s+i.price*i.qty,0);
+  const count=CART.reduce((s,i)=>s+i.qty,0);
+  const maxNum=ORDERS.reduce((m,o)=>{
+    const n=parseInt((o.code||'').slice(1));return isNaN(n)?m:Math.max(m,n);
+  },0);
+  const code='A'+String(maxNum+1).padStart(3,'0');
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const timeStr=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const order={code,name:'现场客户',phone:'',amount:total,status:'done',
+    method:'自提',time:timeStr,remark:'现场收银·'+payMethod,
+    goods:CART.map(i=>({name:i.name,qty:i.qty,price:i.price}))};
+  ORDERS.unshift(order);saveOrders();
+  CART.forEach(i=>{
+    const g=GOODS.find(x=>x.code===i.code);
+    if(g){
+      g.stock-=i.qty;
+      if(g.stock<0)g.stock=0;
+      g.totalOut=(g.totalOut||0)+i.qty;
+      addMovement(g.name, g.code, 'out', i.qty);
+    }
+  });
+  saveGoodsData();
+  document.getElementById('doneSub').textContent=`已通过${payMethod}收款，订单已生成`;
+  document.getElementById('doneOrderCode').textContent=code;
+  document.getElementById('doneCount').textContent=count+' 件';
+  document.getElementById('doneAmount').textContent='¥'+total.toLocaleString();
+  document.getElementById('doneView').classList.add('show');
+}
+function backToPos(){
+  CART=[];
+  document.getElementById('doneView').classList.remove('show');
+  renderPos();focusPosInput();
+}
+
+document.addEventListener('click',e=>{
+  if(document.getElementById('posView').classList.contains('show')&&
+     !document.getElementById('qrShow').classList.contains('show')&&
+     !document.getElementById('doneView').classList.contains('show')&&
+     !document.getElementById('payMask').classList.contains('show')&&
+     !document.getElementById('cameraModal').classList.contains('show')){
+    if(!e.target.closest('input,button'))focusPosInput();
+  }
+  if(document.getElementById('staffApp').classList.contains('show')){
+    if(document.getElementById('confirmMask').classList.contains('show'))return;
+    if(document.getElementById('cameraModal').classList.contains('show'))return;
+    if(!e.target.closest('input,button'))focusStaff();
+  }
+});
+</script>
+</body>
+</html>
