@@ -815,6 +815,14 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   background:rgba(255,255,255,.15);color:#fff;font-size:20px;
   display:flex;align-items:center;justify-content:center;}
 .camera-head .close:active{background:rgba(255,255,255,.28);}
+/* 闪光灯按钮 */
+.camera-head .cam-actions{display:flex;align-items:center;gap:8px;}
+.camera-head .torch-btn{width:38px;height:38px;border-radius:50%;
+  background:rgba(255,255,255,.15);color:#fff;font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,transform .15s;border:none;}
+.camera-head .torch-btn:active{transform:scale(.94);background:rgba(255,255,255,.28);}
+.camera-head .torch-btn.on{background:linear-gradient(135deg,#ffd166,#f4a261);color:#5c2c00;}
 #cameraReader{flex:1;background:#000;position:relative;overflow:hidden;}
 #cameraReader video{width:100% !important;height:100% !important;object-fit:cover !important;display:block !important;}
 #cameraReader canvas{display:none !important;}
@@ -1100,6 +1108,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
         <div class="arrow">›</div>
       </button>
     </div>
+    <div id="staffSuccess"></div>
     <div id="staffResult"></div>
     <div class="staff-recent" id="staffRecent" style="display:none;">
       <div class="rh"><span>今日操作记录</span><button class="clear" onclick="clearStaffRecent()">清空</button></div>
@@ -1112,12 +1121,15 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 <div class="camera-modal" id="cameraModal">
   <div class="camera-head">
     <div class="ct">📱 手机扫码</div>
-    <button class="close" onclick="stopCameraScan()">✕</button>
+    <div class="cam-actions">
+      <button class="torch-btn" id="torchBtn" onclick="toggleTorch()" title="闪光灯">🔦</button>
+      <button class="close" onclick="stopCameraScan()">✕</button>
+    </div>
   </div>
   <div id="cameraReader"></div>
   <div class="camera-tip">
     将商品二维码对准取景框内，<b>自动识别</b><br>
-    识别成功会自动关闭相机
+    识别成功会自动关闭相机 · 点击画面可重新对焦
   </div>
 </div>
 
@@ -1641,9 +1653,7 @@ const SFX = (function(){
     src.stop(t0 + dur + 0.02);
   }
   return {
-    // 普通按钮（现在所有按钮统一用这个）：轻点短促"哒"
     click(){ noise(0.045, 0.07); tone(1180, 0.03, 'sine', 0.05, 0.005); },
-    // 以下保留给非按钮场景使用
     primary(){ tone(880, 0.055, 'triangle', 0.1); tone(1320, 0.07, 'sine', 0.06, 0.03); },
     toggle(){ tone(1000, 0.035, 'sine', 0.06); },
     warn(){ tone(340, 0.09, 'triangle', 0.1); tone(240, 0.12, 'sine', 0.07, 0.04); },
@@ -1721,6 +1731,7 @@ let ORDERS = SafeStore.get('fw_orders', null) || [
 
 let MOVEMENTS = SafeStore.get('fw_movements', []);
 let STAFF_RECENT = SafeStore.get('fw_staff_recent', []);
+let STAFF_LAST_SUCCESS = SafeStore.get('fw_staff_last_success', null);
 let QR_CODES = SafeStore.get('fw_qr_codes', { wx:'', ali:'', logo:'' });
 
 let CART = [];
@@ -1741,6 +1752,7 @@ let staffPage = 1;
 let goodsPage = 1;
 let invPage = 1;
 let lowStockPage = 1;
+let torchOn = false;
 const PER_PAGE = 10;
 const MOV_PER_PAGE = 15;
 const SUM_PER_PAGE = 5;
@@ -1759,6 +1771,12 @@ function saveOrders(){SafeStore.set('fw_orders',ORDERS);}
 function saveStaffRecent(){SafeStore.set('fw_staff_recent',STAFF_RECENT.slice(0,50));}
 function saveQRCodes(){return SafeStore.set('fw_qr_codes',QR_CODES);}
 function saveMovements(){SafeStore.set('fw_movements',MOVEMENTS);}
+
+function todayStr(){
+  const now = new Date();
+  const pad = x => String(x).padStart(2,'0');
+  return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+}
 
 function addMovement(name, code, type, qty){
   const now = new Date();
@@ -2491,11 +2509,34 @@ function capturePhoto(){
   toast('照片已拍摄');
 }
 
+/* ========== 员工入库 ========== */
+function renderStaffSuccess(){
+  const el = document.getElementById('staffSuccess');
+  if(!el) return;
+  const s = STAFF_LAST_SUCCESS;
+  if(!s){ el.innerHTML = ''; return; }
+  if(s.date !== todayStr()){ el.innerHTML = ''; return; }
+  const actionText = s.delta > 0 ? '入库' : '出库';
+  const absN = Math.abs(s.delta);
+  el.innerHTML = `
+    <div class="staff-success">
+      <div class="ico">✓</div>
+      <div class="txt">
+        <div class="t1">${s.name} ${actionText}成功</div>
+        <div class="t2">${actionText} ${absN} 件 · 当前库存 ${s.stock} 件</div>
+      </div>
+    </div>`;
+}
+
 function initStaff(){
   const now=new Date();
   document.getElementById('staffDate').textContent=
     `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
   staffPage=1;
+  // 上次扫码的表单清空，必须等再次扫码才显示
+  document.getElementById('staffResult').innerHTML='';
+  // 恢复上次成功提示（如果是今天）
+  renderStaffSuccess();
   renderStaffRecent();focusStaff();
 }
 function focusStaff(){
@@ -2525,6 +2566,8 @@ function handleStaffCode(code){
   }
 }
 function showStaffResult(g){
+  // 清掉上次的成功提示，避免和当前表单叠加
+  document.getElementById('staffSuccess').innerHTML = '';
   const sc=g.stock<=0?'red':(g.stock<=5?'':'green');
   document.getElementById('staffResult').innerHTML=`
     <div class="staff-result">
@@ -2599,50 +2642,31 @@ function staffStock(code,n){
   saveGoodsData();
   const now=new Date();
   const pad=x=>String(x).padStart(2,'0');
+  const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   STAFF_RECENT.unshift({
-    name:g.name, delta:n,
-    time:`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+    name:g.name, delta:n, time:timeStr
   });
   saveStaffRecent();
   staffPage=1;
-  const actionText = n>0 ? '入库' : '出库';
-  const absN = Math.abs(n);
-  document.getElementById('staffResult').innerHTML=`
-    <div class="staff-success">
-      <div class="ico">✓</div>
-      <div class="txt">
-        <div class="t1">${g.name} ${actionText}成功</div>
-        <div class="t2">${actionText} ${absN} 件 · 当前库存 ${g.stock} 件</div>
-      </div>
-    </div>
-    <div class="staff-result">
-      <div class="sr-head">
-        <div class="sr-icon">${g.img?`<img src="${g.img}">`:(g.icon||'📦')}</div>
-        <div class="sr-title">
-          <div class="n">${g.name}</div>
-          <div class="s">${g.category||'未分类'}</div>
-        </div>
-      </div>
-      <div class="sr-stock">
-        <div class="n green">${g.stock}</div>
-        <div class="l"><b>当前库存</b>件</div>
-      </div>
-      <div class="staff-op">
-        <div class="op-row">
-          <div class="op-label"><span class="op-prefix">入库</span>
-            <input type="number" id="inQty" placeholder="输入数量" min="1" autocomplete="off"></div>
-          <button class="in" onclick="askStaffStock('${g.code}',1)">入库</button>
-        </div>
-        <div class="op-row">
-          <div class="op-label"><span class="op-prefix">出库</span>
-            <input type="number" id="outQty" placeholder="输入数量" min="1" autocomplete="off"></div>
-          <button class="out" onclick="askStaffStock('${g.code}',-1)">出库</button>
-        </div>
-      </div>
-    </div>`;
+
+  // 记录“最后一次成功操作”，用于重进页面时显示提示
+  STAFF_LAST_SUCCESS = {
+    name: g.name,
+    delta: n,
+    stock: g.stock,
+    time: timeStr,
+    date: todayStr()
+  };
+  SafeStore.set('fw_staff_last_success', STAFF_LAST_SUCCESS);
+
+  // 只显示成功提示，不再显示商品表单
+  renderStaffSuccess();
+  document.getElementById('staffResult').innerHTML = '';
+
   renderStaffRecent();
   SFX.success();
-  toast(`${g.name} ${actionText} ${absN} 件，当前 ${g.stock}`);
+  const actionText = n>0 ? '入库' : '出库';
+  toast(`${g.name} ${actionText} ${Math.abs(n)} 件，当前 ${g.stock}`);
   focusStaff();
 }
 function renderStaffRecent(){
@@ -2675,6 +2699,7 @@ function clearStaffRecent(){
   STAFF_RECENT=[];saveStaffRecent();staffPage=1;renderStaffRecent();
 }
 
+/* ========== 扫码相机 ========== */
 let cameraScanner = null;
 let cameraStarting = false;
 let cameraMode = 'staff';
@@ -2690,6 +2715,10 @@ function startCameraScan(mode){
     return;
   }
   document.getElementById('cameraModal').classList.add('show');
+  // 重置闪光灯状态
+  torchOn = false;
+  const tb = document.getElementById('torchBtn');
+  if(tb) tb.classList.remove('on');
   if(cameraStarting) return;
   cameraStarting = true;
   setTimeout(async ()=>{
@@ -2736,6 +2765,10 @@ function startCameraScan(mode){
 }
 async function stopCameraScan(){
   document.getElementById('cameraModal').classList.remove('show');
+  // 关闭闪光灯 UI 状态
+  torchOn = false;
+  const tb = document.getElementById('torchBtn');
+  if(tb) tb.classList.remove('on');
   if(cameraScanner){
     try{
       const state = cameraScanner.getState();
@@ -2743,6 +2776,47 @@ async function stopCameraScan(){
       await cameraScanner.clear();
     }catch(e){ /* ignore */ }
   }
+}
+
+/* 闪光灯开关 */
+async function toggleTorch(){
+  try{
+    const video = document.querySelector('#cameraReader video');
+    if(!video || !video.srcObject){
+      toast('相机未就绪'); return;
+    }
+    const track = video.srcObject.getVideoTracks()[0];
+    if(!track){ toast('相机未就绪'); return; }
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if(!caps.torch){
+      toast('此设备或浏览器不支持闪光灯');
+      return;
+    }
+    const next = !torchOn;
+    await track.applyConstraints({ advanced: [{ torch: next }] });
+    torchOn = next;
+    const btn = document.getElementById('torchBtn');
+    if(btn) btn.classList.toggle('on', torchOn);
+  }catch(e){
+    console.error(e);
+    toast('闪光灯操作失败');
+  }
+}
+
+/* 点击取景框触发重新对焦 */
+async function triggerAutoFocus(){
+  try{
+    const video = document.querySelector('#cameraReader video');
+    if(!video || !video.srcObject) return;
+    const track = video.srcObject.getVideoTracks()[0];
+    if(!track) return;
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if(caps.focusMode && caps.focusMode.includes('continuous')){
+      await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+    } else if(caps.focusMode && caps.focusMode.includes('single-shot')){
+      await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+    }
+  }catch(e){ /* 静默失败 */ }
 }
 
 function handlePosCode(code){
@@ -3266,15 +3340,20 @@ document.addEventListener('click',e=>{
   }
 });
 
-/* ========== 全局按钮音效监听 ==========
-   现在所有按钮统一使用 SFX.click()（与"管理员密码"按钮相同的轻点音）。
-   扫码成功、登录成功、操作成功、密码错误这些非按钮音效保持原样。 */
+/* 全局按钮音效：所有按钮统一轻点"哒"（与"管理员密码"按钮一致） */
 document.addEventListener('click', function(e){
   const btn = e.target.closest('button, .entry-btn, .side-item, .atab, .otab, .gcard .gc-actions button, .warn-btn, .staff-camera-btn, .pos-camera-btn, .pos-return-btn, .cash-switch, .confirm-pay, .back-pos, .btn-up, .btn-rm, .mh-btn, .btn-half, .scan-btn, .video-preview-btn, .capture-btn');
   if(!btn) return;
   if(btn.disabled) return;
   SFX.click();
 }, true);
+
+/* 点击取景框触发自动对焦 */
+document.addEventListener('click', function(e){
+  if(e.target.closest('#cameraReader')){
+    triggerAutoFocus();
+  }
+});
 
 </script>
 </body>
