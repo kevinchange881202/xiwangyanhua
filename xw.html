@@ -14,14 +14,9 @@
   --bg:#fdf6f0;--line:#f0e0d5;
   --t1:#2b1f1a;--t2:#6b5a52;--t3:#a8968c;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
-  --app-h:100vh;
-  --app-h:100dvh;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{
-  height:100%;
-  min-height:100%;
-}
+html,body{height:100%;min-height:100%;}
 body{
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
   background:var(--bg);color:var(--t1);font-size:14px;
@@ -391,6 +386,55 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(min-width:520px){.form-grid{grid-template-columns:repeat(3,1fr);}}
 .form-grid .form-row{margin-bottom:0;}
+
+/* ========== 商品图片上传块 ========== */
+.img-upload-block{
+  background:#fdf6f0;border-radius:14px;padding:12px;
+}
+.img-upload-block .img-preview{
+  width:100%;
+  aspect-ratio:16/10;
+  background:#fff;
+  border-radius:12px;
+  border:2px dashed #e8dfd5;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  margin-bottom:10px;
+  cursor:pointer;
+  position:relative;
+  transition:border-color .15s,background .15s;
+}
+.img-upload-block .img-preview:active{border-color:var(--red);background:#fff5f2;}
+.img-upload-block .img-preview img{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.img-upload-block .img-preview .empty-ico{
+  font-size:52px;opacity:.45;
+}
+.img-upload-block .img-preview .tip-badge{
+  position:absolute;bottom:8px;right:10px;
+  font-size:11px;color:#fff;
+  background:rgba(0,0,0,.55);
+  padding:3px 9px;border-radius:10px;
+  font-weight:600;
+}
+.img-upload-block .img-actions{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+}
+.img-upload-block .img-actions button{
+  height:44px;border-radius:10px;
+  font-size:13.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .15s;
+}
+.img-upload-block .img-actions button:active{transform:scale(.97);}
+.img-upload-block .img-actions .pick{
+  background:linear-gradient(135deg,#4f7cff,#3d6aeb);color:#fff;
+  box-shadow:0 6px 14px rgba(79,124,255,.3);
+}
+.img-upload-block .img-actions .clear{
+  background:#fff;color:var(--red);border:1.5px solid #fca5a5;
+}
 
 .code-input-block{background:#fdf6f0;border-radius:14px;padding:14px;margin-bottom:14px;}
 .code-input-block .scan-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
@@ -1058,6 +1102,23 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
         <div class="val" id="fCodeDisplay">—</div>
       </div>
     </div>
+
+    <!-- 商品图片上传（编辑时在二维码下方、新建时在名称上方） -->
+    <div class="form-row">
+      <label>商品图片 <span class="hint">选填</span></label>
+      <div class="img-upload-block">
+        <div class="img-preview" id="fImgPreview" onclick="pickGoodsImage()">
+          <span class="empty-ico">📦</span>
+          <div class="tip-badge">点击上传</div>
+        </div>
+        <div class="img-actions">
+          <button type="button" class="pick" onclick="pickGoodsImage()">📷 上传图片</button>
+          <button type="button" class="clear" onclick="clearGoodsImage()">移除图片</button>
+        </div>
+        <input type="file" id="fImgInput" accept="image/*" style="display:none" onchange="handleGoodsImageUpload(event)">
+      </div>
+    </div>
+
     <div class="form-row">
       <label>商品名称 <span class="req">*</span></label>
       <input type="text" id="fName" placeholder="例如：99发金马尾">
@@ -1265,7 +1326,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   </div>
 </div>
 
-<!-- 密码管理弹窗（含管理员 + 员工） -->
+<!-- 密码管理弹窗 -->
 <div class="confirm-mask" id="pwdMask">
   <div class="confirm-box" style="max-width:420px;text-align:left;">
     <div class="icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#d97706;margin:0 auto 14px;">🔐</div>
@@ -1363,6 +1424,7 @@ let QR_CODES = SafeStore.get('fw_qr_codes', { wx:'', ali:'', logo:'' });
 
 let CART = [];
 let editingCode = null;
+let editingImg = '';       // 商品表单里当前正在编辑的图片（base64）
 let currentTab = 'goods';
 let orderFilter = 'all';
 let loginMode = 'admin';
@@ -1851,6 +1913,7 @@ function closeLowStock(){
   document.getElementById('lowStockSheet').classList.remove('show');
 }
 
+/* ================= 商品表单 ================= */
 function openGoodsForm(code){
   editingCode=code||null;
   document.getElementById('sheetTitle').textContent=code?'编辑商品':'新建商品';
@@ -1867,6 +1930,8 @@ function openGoodsForm(code){
     document.getElementById('fUnitPrice').value=g.unitPrice||'';
     document.getElementById('fSuggestPrice').value=g.suggestPrice||'';
     document.getElementById('fVideo').value=g.video||'';
+    // 图片
+    editingImg = g.img || '';
   } else {
     document.getElementById('codeInputRow').style.display='block';
     document.getElementById('codeDisplayRow').style.display='none';
@@ -1875,7 +1940,9 @@ function openGoodsForm(code){
       document.getElementById(id).value='';
     });
     document.getElementById('fPerBox').value=1;
+    editingImg = '';
   }
+  renderGoodsImgPreview();
   document.getElementById('sheetMask').classList.add('show');
   document.getElementById('goodsSheet').classList.add('show');
   if(!code){
@@ -1915,7 +1982,8 @@ function saveGoods(){
     boxPrice:parseFloat(document.getElementById('fBoxPrice').value)||0,
     unitPrice:parseFloat(document.getElementById('fUnitPrice').value)||0,
     suggestPrice,
-    video:document.getElementById('fVideo').value.trim()
+    video:document.getElementById('fVideo').value.trim(),
+    img: editingImg || ''
   };
   if(editingCode){
     const idx=GOODS.findIndex(x=>x.code===editingCode);
@@ -1925,10 +1993,59 @@ function saveGoods(){
     const code=document.getElementById('fCode').value.trim();
     if(!code){toast('请扫码或输入商品二维码');return;}
     if(GOODS.find(x=>x.code===code)){toast('该二维码已存在');return;}
-    GOODS.push({...data,code,stock:0,icon:'📦',img:'',totalIn:0,totalOut:0});
+    GOODS.push({...data,code,stock:0,icon:'📦',totalIn:0,totalOut:0});
     toast('商品已新建');
   }
   saveGoodsData();renderGoods();renderStats();closeSheet();
+}
+
+/* ================= 商品图片上传 ================= */
+function pickGoodsImage(){
+  document.getElementById('fImgInput').click();
+}
+function handleGoodsImageUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ toast('请选择图片文件'); return; }
+  if(file.size > 6*1024*1024){ toast('图片不能超过 6MB'); return; }
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      // 压缩到最大 900px
+      const maxSize = 900;
+      let w = img.width, h = img.height;
+      if(w > maxSize || h > maxSize){
+        if(w > h){ h = Math.round(h*maxSize/w); w = maxSize; }
+        else { w = Math.round(w*maxSize/h); h = maxSize; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      editingImg = dataUrl;
+      renderGoodsImgPreview();
+      toast('图片已上传');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function clearGoodsImage(){
+  if(!editingImg) return;
+  editingImg = '';
+  renderGoodsImgPreview();
+  toast('已移除图片');
+}
+function renderGoodsImgPreview(){
+  const el = document.getElementById('fImgPreview');
+  if(!el) return;
+  if(editingImg){
+    el.innerHTML = `<img src="${editingImg}"><div class="tip-badge">点击更换</div>`;
+  } else {
+    el.innerHTML = `<span class="empty-ico">📦</span><div class="tip-badge">点击上传</div>`;
+  }
 }
 
 function initStaff(){
