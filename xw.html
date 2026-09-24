@@ -309,7 +309,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .gcard .gc-actions .edit{background:#ffeaea;color:var(--red);}
 .gcard .gc-actions .danger{background:#fff;color:var(--red);border:1px solid #fca5a5;}
 
-/* 入库明细：整体缩小一页 15 行 */
+/* 入库明细：一页 15 行，行更小 */
 .mov-list{display:flex;flex-direction:column;gap:6px;}
 .mov-item{background:#fff;border-radius:10px;border:1px solid var(--line);
   padding:6px 10px;display:flex;align-items:center;gap:8px;}
@@ -526,7 +526,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .pos-hdr .back{padding:7px 12px;border-radius:8px;background:rgba(255,255,255,.18);
   color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px;white-space:nowrap;}
 
-/* 统一的手机扫码按钮：收银台和退货都用这个 */
 .pos-camera-btn{
   padding:7px 12px;border-radius:8px;
   background:linear-gradient(135deg,#4f7cff,#3d6aeb);
@@ -638,7 +637,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .pos-foot .pay-btn{flex:1;background:linear-gradient(135deg,#12b76a,#0a9d56);color:#fff;}
 .pos-foot .pay-btn:disabled{background:#ddd;color:#999;}
 
-/* 退货页 */
 .return-view{position:fixed;inset:0;background:#fdf6f0;z-index:300;display:none;flex-direction:column;}
 .return-view.show{display:flex;}
 .return-hdr{flex:0 0 auto;padding:calc(12px + var(--st)) 12px 12px;
@@ -686,7 +684,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   color:#5c2c00;box-shadow:0 8px 20px rgba(244,162,97,.35);}
 .return-foot .confirm-btn:disabled{background:#ddd;color:#999;box-shadow:none;}
 
-/* 拍照相机 */
 #photoReader{flex:1;position:relative;background:#000;overflow:hidden;
   display:flex;align-items:center;justify-content:center;}
 #photoReader video{width:100%;height:100%;object-fit:cover;display:block;}
@@ -1590,6 +1587,79 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 <script>
 const LOGO_IMAGE = '';
 
+/* ========== 音效引擎（Web Audio 合成，不依赖外部音频文件） ========== */
+const SFX = (function(){
+  let ctx = null;
+  function getCtx(){
+    try{
+      if(!ctx){
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return null;
+        ctx = new AC();
+      }
+      if(ctx.state === 'suspended'){ ctx.resume().catch(()=>{}); }
+      return ctx;
+    }catch(e){ return null; }
+  }
+  // 单音：freq 频率，dur 时长(秒)，type 波形，vol 音量，delay 延迟
+  function tone(freq, dur, type, vol, delay){
+    const c = getCtx(); if(!c) return;
+    const t0 = c.currentTime + (delay || 0);
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(vol || 0.12, t0 + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain);
+    gain.connect(c.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.03);
+  }
+  // 短噪声：模拟"嗒"的机械按键感
+  function noise(dur, vol, delay){
+    const c = getCtx(); if(!c) return;
+    const t0 = c.currentTime + (delay || 0);
+    const len = Math.max(1, Math.floor(c.sampleRate * dur));
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<len;i++){
+      data[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2);
+    }
+    const src = c.createBufferSource();
+    const gain = c.createGain();
+    const filter = c.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 2200;
+    filter.Q.value = 1.2;
+    gain.gain.setValueAtTime(vol || 0.08, t0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.buffer = buf;
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(c.destination);
+    src.start(t0);
+    src.stop(t0 + dur + 0.02);
+  }
+  return {
+    // 普通按钮：轻点，短促"哒"
+    click(){ noise(0.045, 0.07); tone(1180, 0.03, 'sine', 0.05, 0.005); },
+    // 主要操作（保存/确认/收款/入口）：清脆"叮"
+    primary(){ tone(880, 0.055, 'triangle', 0.1); tone(1320, 0.07, 'sine', 0.06, 0.03); },
+    // 切换 tab：轻微"嗒"
+    toggle(){ tone(1000, 0.035, 'sine', 0.06); },
+    // 危险/取消：低沉一点
+    warn(){ tone(340, 0.09, 'triangle', 0.1); tone(240, 0.12, 'sine', 0.07, 0.04); },
+    // 成功：上扬双音
+    success(){ tone(780, 0.07, 'sine', 0.1); tone(1170, 0.11, 'sine', 0.09, 0.06); },
+    // 错误：下降双音
+    error(){ tone(420, 0.09, 'square', 0.07); tone(220, 0.16, 'square', 0.07, 0.08); },
+    // 扫码成功：清脆"滴"
+    scan(){ tone(1760, 0.07, 'sine', 0.13); tone(2350, 0.045, 'sine', 0.07, 0.025); }
+  };
+})();
+
 const SafeStore = {
   get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
   set(k,v){
@@ -1602,6 +1672,19 @@ const SafeStore = {
     }
   }
 };
+
+/* ========== 登录态（3 分钟免密） ========== */
+const AUTH_DURATION = 3 * 60 * 1000; // 3 分钟
+function setAuth(key){
+  try{ sessionStorage.setItem(key, String(Date.now() + AUTH_DURATION)); }catch(e){}
+}
+function isAuthValid(key){
+  try{
+    const v = sessionStorage.getItem(key);
+    if(!v) return false;
+    return Date.now() < (parseInt(v) || 0);
+  }catch(e){ return false; }
+}
 
 let ADMIN_PWD = SafeStore.get('fw_admin_pwd', '123456');
 let STAFF_PWD = SafeStore.get('fw_staff_pwd', '8888');
@@ -1703,19 +1786,37 @@ function addMovement(name, code, type, qty){
 })();
 
 function requestAdmin(){
+  // 3 分钟内已通过验证，免密进入
+  if(isAuthValid('fw_admin_auth')){
+    document.getElementById('landing').classList.remove('show');
+    document.getElementById('staffApp').classList.remove('show');
+    document.getElementById('posView').classList.remove('show');
+    document.getElementById('adminApp').classList.add('show');
+    initAdmin();
+    return;
+  }
   loginMode='admin';
   document.getElementById('loginIco').textContent='🔒';
   document.getElementById('loginTitle').textContent='进入商家后台';
-  document.getElementById('loginSub').textContent='请输入管理密码';
+  document.getElementById('loginSub').textContent='请输入管理密码（3 分钟内免二次验证）';
   document.getElementById('pwdInput').value='';
   document.getElementById('loginMask').classList.add('show');
   setTimeout(()=>document.getElementById('pwdInput').focus(),100);
 }
 function requestStaff(){
+  // 3 分钟内已通过验证，免密进入
+  if(isAuthValid('fw_staff_auth')){
+    document.getElementById('landing').classList.remove('show');
+    document.getElementById('adminApp').classList.remove('show');
+    document.getElementById('posView').classList.remove('show');
+    document.getElementById('staffApp').classList.add('show');
+    initStaff();
+    return;
+  }
   loginMode='staff';
   document.getElementById('loginIco').textContent='📦';
   document.getElementById('loginTitle').textContent='员工入库';
-  document.getElementById('loginSub').textContent='请输入员工密码（所有员工共用）';
+  document.getElementById('loginSub').textContent='请输入员工密码（3 分钟内免二次验证）';
   document.getElementById('pwdInput').value='';
   document.getElementById('loginMask').classList.add('show');
   setTimeout(()=>document.getElementById('pwdInput').focus(),100);
@@ -1724,15 +1825,22 @@ function closeLogin(){document.getElementById('loginMask').classList.remove('sho
 function doLogin(){
   const pwd=document.getElementById('pwdInput').value;
   const correct = (loginMode==='admin') ? ADMIN_PWD : STAFF_PWD;
-  if(pwd!==correct){toast('密码错误');return;}
+  if(pwd!==correct){
+    SFX.error();
+    toast('密码错误');
+    return;
+  }
+  SFX.success();
   closeLogin();
   if(loginMode==='admin'){
+    setAuth('fw_admin_auth');
     document.getElementById('landing').classList.remove('show');
     document.getElementById('staffApp').classList.remove('show');
     document.getElementById('posView').classList.remove('show');
     document.getElementById('adminApp').classList.add('show');
     initAdmin();
   } else {
+    setAuth('fw_staff_auth');
     document.getElementById('landing').classList.remove('show');
     document.getElementById('adminApp').classList.remove('show');
     document.getElementById('posView').classList.remove('show');
@@ -1781,7 +1889,7 @@ function saveAdminPwd(){
   const sNw = document.getElementById('pwdStaffNew').value.trim();
   const sNw2 = document.getElementById('pwdStaffNew2').value.trim();
 
-  if(cur !== ADMIN_PWD){ toast('当前管理员密码错误'); return; }
+  if(cur !== ADMIN_PWD){ SFX.error(); toast('当前管理员密码错误'); return; }
 
   const wantChangeAdmin = (nw || nw2);
   const wantChangeStaff = (sNw || sNw2);
@@ -1808,6 +1916,7 @@ function saveAdminPwd(){
     msgs.push('员工密码已更新');
   }
   closePwdManager();
+  SFX.success();
   toast(msgs.join(' · '));
 }
 
@@ -1981,7 +2090,6 @@ function renderInvTable(){
       <td class="num-left">${g.stock}</td>
     </tr>
   `).join('');
-  // 库存统计：始终显示翻页（即使只有一页）
   pager.innerHTML = `
     <button ${invPage<=1?'disabled':''} onclick="invGo(${invPage-1})">上一页</button>
     <span class="pg-info">${invPage} / ${pages}</span>
@@ -2174,7 +2282,6 @@ function renderLowStock(){
         <div class="ll-stock ${cls}">${g.stock}</div>
       </div>`;
   }).join('');
-  // 库存预警：始终显示翻页（即使只有一页）
   pager.innerHTML = `
     <button ${lowStockPage<=1?'disabled':''} onclick="lowStockGo(${lowStockPage-1})">上一页</button>
     <span class="pg-info">${lowStockPage} / ${pages}</span>
@@ -2389,6 +2496,7 @@ function capturePhoto(){
   editingImg = dataUrl;
   renderGoodsImgPreview();
   stopPhotoCamera();
+  SFX.success();
   toast('照片已拍摄');
 }
 
@@ -2416,8 +2524,14 @@ function handleStaffScan(e){
 function handleStaffCode(code){
   document.getElementById('staffScanBox').classList.add('active');
   const g=GOODS.find(x=>x.code===code);
-  if(g) showStaffResult(g);
-  else { toast('未找到商品：'+code); focusStaff(); }
+  if(g){
+    SFX.scan();                 // 扫码成功：滴
+    showStaffResult(g);
+  } else {
+    SFX.error();
+    toast('未找到商品：'+code);
+    focusStaff();
+  }
 }
 function showStaffResult(g){
   const sc=g.stock<=0?'red':(g.stock<=5?'':'green');
@@ -2536,6 +2650,7 @@ function staffStock(code,n){
       </div>
     </div>`;
   renderStaffRecent();
+  SFX.success();
   toast(`${g.name} ${actionText} ${absN} 件，当前 ${g.stock}`);
   focusStaff();
 }
@@ -2605,6 +2720,7 @@ function startCameraScan(mode){
                 inp.value = code;
                 inp.focus();
               }
+              SFX.scan();
               toast('已录入二维码：' + code);
             } else if(cameraMode === 'pos'){
               handlePosCode(code);
@@ -2640,12 +2756,13 @@ async function stopCameraScan(){
 
 function handlePosCode(code){
   const g = GOODS.find(x=>x.code===code);
-  if(!g){ toast('未找到商品：'+code); return; }
+  if(!g){ SFX.error(); toast('未找到商品：'+code); return; }
   const item = CART.find(x=>x.code===code);
   if(item) item.qty++;
   else CART.push({code:g.code, name:g.name, price:g.suggestPrice, icon:g.icon, img:g.img||'', qty:1});
   renderPos();
   focusPosInput();
+  SFX.scan();                    // 扫码成功：滴
   toast('已加入购物车：'+g.name);
 }
 
@@ -2743,6 +2860,7 @@ function toggleOrder(code){document.getElementById('oc-'+code).classList.toggle(
 function changeStatus(code,status){
   const o=ORDERS.find(x=>x.code===code);if(!o)return;
   o.status=status;saveOrders();renderOrders();renderStats();updateBadges();
+  SFX.success();
   const map={paid:'已确认收款',packed:'已标记配货',done:'订单已完成',cancel:'订单已取消'};
   toast(map[status]||'已更新');
 }
@@ -2792,6 +2910,7 @@ function handleUploadQR(e, type){
       }
       renderQRSettings();
       if(type==='logo') document.getElementById('logoBox').innerHTML=`<img src="${dataUrl}">`;
+      SFX.success();
       toast(type==='logo'?'店铺图标已保存':'收款码已保存');
     };
     img.src=ev.target.result;
@@ -2834,10 +2953,11 @@ function handlePosScan(e){
   if(code===lastScan && Date.now()-lastScanTime<800)return;
   lastScan=code;lastScanTime=Date.now();
   const g=GOODS.find(x=>x.code===code);
-  if(!g){toast('未找到商品：'+code);focusPosInput();return;}
+  if(!g){ SFX.error(); toast('未找到商品：'+code); focusPosInput(); return; }
   const item=CART.find(x=>x.code===code);
   if(item)item.qty++;
   else CART.push({code:g.code,name:g.name,price:g.suggestPrice,icon:g.icon,img:g.img||'',qty:1});
+  SFX.scan();                    // 扫码枪扫码成功：滴
   renderPos();focusPosInput();
 }
 function renderPos(){
@@ -2958,10 +3078,11 @@ function handleReturnScan(e){
 }
 function addReturnItem(code){
   const g = GOODS.find(x=>x.code===code);
-  if(!g){ toast('未找到商品：'+code); return; }
+  if(!g){ SFX.error(); toast('未找到商品：'+code); return; }
   const item = RETURN_CART.find(x=>x.code===code);
   if(item) item.qty++;
   else RETURN_CART.push({code:g.code,name:g.name,price:g.suggestPrice,icon:g.icon,img:g.img||'',qty:1});
+  SFX.scan();                    // 退货扫码成功：滴
   renderReturnCart();
 }
 function changeReturnQty(code,d){
@@ -3013,6 +3134,7 @@ function confirmReturn(){
   RETURN_CART = [];
   closeReturn();
   renderPos();
+  SFX.success();
   toast('退货成功，共退 ' + retCount + ' 件');
 }
 
@@ -3124,6 +3246,7 @@ function completeOrder(payMethod){
   document.getElementById('doneAmount').textContent='¥'+total.toLocaleString();
   document.getElementById('doneView').classList.add('show');
   POS_RETURNS=[];
+  SFX.success();
 }
 function backToPos(){
   CART=[];
@@ -3151,6 +3274,46 @@ document.addEventListener('click',e=>{
     if(!e.target.closest('input,button'))focusStaff();
   }
 });
+
+/* ========== 全局按钮音效监听（capture 阶段，先于内联 onclick） ========== */
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('button, .entry-btn, .side-item, .atab, .otab, .gcard .gc-actions button, .otab, .warn-btn, .staff-camera-btn, .pos-camera-btn, .pos-return-btn, .cash-switch, .confirm-pay, .back-pos, .btn-up, .btn-rm, .mh-btn, .btn-half, .scan-btn, .video-preview-btn, .capture-btn');
+  if(!btn) return;
+  if(btn.disabled) return;
+
+  // 分类判断
+  const cls = btn.classList;
+  // 危险/取消类：低沉音
+  if(cls.contains('danger') || cls.contains('clear-btn') ||
+     cls.contains('cancel') || cls.contains('btn-rm') ||
+     cls.contains('back') || cls.contains('cancel-btn')){
+    SFX.warn();
+    return;
+  }
+  // 主要操作类：清脆"叮"
+  if(cls.contains('pay-btn') || cls.contains('save') ||
+     cls.contains('primary') || cls.contains('confirm-pay') ||
+     cls.contains('entry-btn') || cls.contains('confirm-btn') ||
+     cls.contains('ok') || cls.contains('mh-btn') ||
+     cls.contains('btn-up') || cls.contains('cash-switch') ||
+     cls.contains('pos-camera-btn') || cls.contains('pos-return-btn') ||
+     cls.contains('staff-camera-btn') || cls.contains('video-preview-btn') ||
+     cls.contains('scan-btn') || cls.contains('staff-op') ||
+     cls.contains('in') || cls.contains('out') ||
+     cls.contains('capture-btn') || cls.contains('btn-half')){
+    SFX.primary();
+    return;
+  }
+  // 切换类：轻"嗒"
+  if(cls.contains('otab') || cls.contains('atab') ||
+     cls.contains('side-item') || cls.contains('warn-btn')){
+    SFX.toggle();
+    return;
+  }
+  // 其他按钮：默认点击音
+  SFX.click();
+}, true);
+
 </script>
 </body>
 </html>
