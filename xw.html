@@ -249,7 +249,9 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 
 .stats-row{display:flex;gap:12px;margin-bottom:10px;}
 .stat-half{flex:1;background:#fff;border-radius:12px;padding:10px 16px;
-  border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+  border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;transition:all .15s;}
+.stat-half:active{background:#fdf6f0;transform:scale(.98);}
 .stat-half .sl{font-size:12.5px;color:var(--t3);font-weight:500;}
 .stat-half .sv{font-size:22px;font-weight:800;line-height:1;}
 .stat-half .sv.orange{color:var(--gold-d);}
@@ -1178,8 +1180,8 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
           <button class="btn-half primary" onclick="openGoodsForm()">+ 新建商品</button>
         </div>
         <div class="stats-row">
-          <div class="stat-half"><div class="sl">待付款</div><div class="sv orange" id="statWait">0</div></div>
-          <div class="stat-half"><div class="sl">待配货</div><div class="sv red" id="statPaid">0</div></div>
+          <div class="stat-half" onclick="gotoOrderTab('wait')"><div class="sl">待付款</div><div class="sv orange" id="statWait">0</div></div>
+          <div class="stat-half" onclick="gotoOrderTab('paid')"><div class="sl">待配货</div><div class="sv red" id="statPaid">0</div></div>
         </div>
         <button class="warn-btn" onclick="openLowStock()">
           <div class="wl"><span class="warn-icon">⚠️</span>库存预警 · 点击查看低库存商品</div>
@@ -1704,7 +1706,7 @@ function isAuthValid(key){
   }catch(e){ return false; }
 }
 
-/* ========== 密码 hash（提高门槛，前端无法真正防破解） ========== */
+/* ========== 密码 hash ========== */
 function hashPwd(pwd){
   const s = String(pwd);
   let h1 = 0x811c9dc5;
@@ -2003,6 +2005,15 @@ function switchTab(tab){
   });
   if(tab==='movements'){ movPage=1; renderMovements(); }
   if(tab==='qrset') renderQRSettings();
+}
+
+/* 点击「待付款/待配货」卡片，跳到订单管理并切到对应 tab */
+function gotoOrderTab(k){
+  orderFilter = k;
+  orderPage = 1;
+  switchTab('order');
+  renderOrders();
+  SFX.click();
 }
 
 function renderStats(){
@@ -2493,7 +2504,7 @@ function renderGoodsImgPreview(){
   }
 }
 
-/* ========== 商品图片相机（带限定框） ========== */
+/* ========== 商品图片相机 ========== */
 let photoStream = null;
 async function startPhotoCamera(){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
@@ -2929,7 +2940,7 @@ function renderOrders(){
             ${o.status==='wait'?`<button class="primary" onclick="changeStatus('${o.code}','paid')">✅ 确认收款</button>`:''}
             ${o.status==='paid'?`<button class="success" onclick="changeStatus('${o.code}','packed')">📦 标记已配货</button>`:''}
             ${o.status==='packed'?`<button class="success" onclick="changeStatus('${o.code}','done')">🎉 标记已取货</button>`:''}
-            ${o.status!=='done'&&o.status!=='cancel'?`<button class="danger" onclick="changeStatus('${o.code}','cancel')">取消</button>`:''}
+            ${o.status!=='cancel'?`<button class="danger" onclick="askCancelOrder('${o.code}')">取消订单</button>`:''}
           </div>
         </div>
       </div>`;
@@ -2943,6 +2954,40 @@ function renderOrders(){
 function orderGo(p){ orderPage=p; renderOrders(); }
 function pickOrderTab(k){orderFilter=k;orderPage=1;renderOrders();}
 function toggleOrder(code){document.getElementById('oc-'+code).classList.toggle('open');}
+
+/* 取消订单：如果订单已完成/已配货，自动恢复库存 */
+function askCancelOrder(code){
+  const o = ORDERS.find(x=>x.code===code);
+  if(!o) return;
+  const needRestore = (o.status === 'done' || o.status === 'packed');
+  let msg = `确定要取消订单 ${o.code} 吗？`;
+  if(needRestore){
+    msg += `\n\n该订单已走完流程，取消后会自动恢复商品库存。`;
+  }
+  if(!confirm(msg)) return;
+
+  // 恢复库存
+  if(needRestore){
+    (o.goods||[]).forEach(item=>{
+      const gd = GOODS.find(x=>x.name===item.name);
+      if(gd){
+        gd.stock += item.qty;
+        gd.totalOut = Math.max(0, (gd.totalOut||0) - item.qty);
+      }
+    });
+    saveGoodsData();
+    renderGoods();
+  }
+
+  o.status = 'cancel';
+  saveOrders();
+  renderOrders();
+  renderStats();
+  updateBadges();
+  SFX.success();
+  toast(needRestore ? '订单已取消，库存已恢复' : '订单已取消');
+}
+
 function changeStatus(code,status){
   const o=ORDERS.find(x=>x.code===code);if(!o)return;
   o.status=status;saveOrders();renderOrders();renderStats();updateBadges();
@@ -2951,7 +2996,7 @@ function changeStatus(code,status){
   toast(map[status]||'已更新');
 }
 
-/* ========== 收款码设置（无店铺图标） ========== */
+/* ========== 收款码设置 ========== */
 function renderQRSettings(){
   const pw=document.getElementById('previewWx');
   pw.innerHTML = QR_CODES.wx ? `<img src="${QR_CODES.wx}">` : '💚';
@@ -3365,7 +3410,7 @@ document.addEventListener('click',e=>{
 
 /* 全局按钮音效 */
 document.addEventListener('click', function(e){
-  const btn = e.target.closest('button, .entry-btn, .side-item, .atab, .otab, .gcard .gc-actions button, .warn-btn, .staff-camera-btn, .pos-camera-btn, .pos-return-btn, .cash-switch, .confirm-pay, .back-pos, .btn-up, .btn-rm, .mh-btn, .btn-half, .scan-btn, .video-preview-btn, .capture-btn');
+  const btn = e.target.closest('button, .entry-btn, .side-item, .atab, .otab, .gcard .gc-actions button, .warn-btn, .staff-camera-btn, .pos-camera-btn, .pos-return-btn, .cash-switch, .confirm-pay, .back-pos, .btn-up, .btn-rm, .mh-btn, .btn-half, .scan-btn, .video-preview-btn, .capture-btn, .stat-half');
   if(!btn) return;
   if(btn.disabled) return;
   SFX.click();
