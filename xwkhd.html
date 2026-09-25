@@ -1505,6 +1505,7 @@ let curDetailQty = 1;
 let curOrderCode = null;
 let pendingOrderCode = null;
 let minPickTime = null;
+let _curDetailNormalHero = '';
 
 function toast(msg){
   const t = document.getElementById('toast');
@@ -1749,41 +1750,76 @@ function quickQty(code, d){
 }
 
 /* ============================================================
-   视频播放
-   —— 列表点 ▶ → 打开详情页 → hero 里直接渲染 iframe（一步到位）
-   —— 详情页 hero 本身有视频时，也可以点 ▶ 进入内嵌播放
+   视频播放 · 稳定回退版
+   规则：
+   1) 直链 .mp4 / .m3u8 等 → <video> 直接播
+   2) 其他网页（包括 app.fireworks-online.cn 这种）→ iframe 原样嵌入，
+      不加任何参数，避免对方页面白屏
+   3) 视频提示条里永远带一个「在浏览器中打开」兜底
+   4) 关闭详情/关闭视频时，先暂停媒体再销毁节点
    ============================================================ */
+function isDirectVideo(url){
+  return /\.(mp4|m4v|mov|webm|ogv|ogg|m3u8)(\?.*)?$/i.test(url);
+}
+
+function buildVideoPlayerHtml(url){
+  if(isDirectVideo(url)){
+    return `<video class="video-frame" src="${url}"
+      controls autoplay muted playsinline webkit-playsinline></video>`;
+  }
+  return `<iframe class="video-frame" src="${url}"
+    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+    allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+}
+
+function buildVideoTipHtml(url){
+  return `<div class="video-tip">
+    <a href="${url}" target="_blank" rel="noopener"
+       style="color:#ffd166;text-decoration:underline;font-weight:800;"
+       onclick="event.stopPropagation();">在浏览器中打开</a>
+    &nbsp;·&nbsp;点右上角 ✕ 返回商品图
+  </div>`;
+}
+
+function stopHeroMedia(hero){
+  if(!hero) return;
+  const v = hero.querySelector('video');
+  if(v){
+    try{ v.pause(); v.removeAttribute('src'); v.load(); }catch(e){}
+  }
+  const f = hero.querySelector('iframe');
+  if(f){
+    try{ f.src = 'about:blank'; }catch(e){}
+  }
+}
+
 function playVideo(code){
   const g = GOODS.find(x=>x.code===code);
-  if(!g || !g.video){ return; }
+  if(!g){ toast('商品不存在'); return; }
+  if(!(g.video||'').trim()){ toast('该商品暂无视频'); return; }
   openDetail(code, true);
 }
 
 function playVideoInDetail(code){
   const g = GOODS.find(x=>x.code===code);
-  if(!g || !g.video) return;
+  if(!g || !(g.video||'').trim()) return;
   const hero = document.querySelector('.detail-hero');
   if(!hero) return;
   if(hero.querySelector('.video-frame')) return;
-  hero.dataset.origHtml = hero.innerHTML;
-  hero.innerHTML = `
-    <button class="video-close" onclick="event.stopPropagation();closeVideoInDetail()">✕</button>
-    <iframe class="video-frame"
-      src="${g.video}"
-      allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-      allowfullscreen
-      referrerpolicy="no-referrer"></iframe>
-    <div class="video-tip">播放中 · 点右上角 ✕ 返回商品图</div>
-  `;
+
+  _curDetailNormalHero = hero.innerHTML;
+  hero.innerHTML =
+    `<button class="video-close"
+       onclick="event.stopPropagation();closeVideoInDetail()">✕</button>` +
+    buildVideoPlayerHtml(g.video) +
+    buildVideoTipHtml(g.video);
 }
 
 function closeVideoInDetail(){
   const hero = document.querySelector('.detail-hero');
   if(!hero) return;
-  if(hero.dataset.origHtml){
-    hero.innerHTML = hero.dataset.origHtml;
-    hero.dataset.origHtml = '';
-  }
+  stopHeroMedia(hero);
+  hero.innerHTML = _curDetailNormalHero || '';
 }
 
 /* 商品详情 */
@@ -1797,22 +1833,29 @@ function openDetail(code, autoPlay){
   document.getElementById('dtTitle').textContent = g.name;
 
   let heroHtml, heroClick;
+  // 先构建正常的 hero（商品图 + 可选 ▶ 遮罩），用于关闭视频后恢复
+  let normalHeroHtml = g.img
+    ? `<img src="${g.img}" alt="${g.name}">`
+    : `<span style="font-size:100px;">${g.icon||'📦'}</span>`;
+  if(hasVideo){
+    normalHeroHtml += `<div class="play-overlay"><div class="pi">▶</div></div>`;
+  }
+  _curDetailNormalHero = normalHeroHtml;
+
   if(autoPlay && hasVideo){
-    /* 从列表点播放进来 → 直接在 hero 里渲染内嵌视频，用户一次点击就能看视频 */
-    heroHtml = `
-      <button class="video-close" onclick="event.stopPropagation();closeVideoInDetail()">✕</button>
-      <iframe class="video-frame"
-        src="${g.video}"
-        allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-        allowfullscreen
-        referrerpolicy="no-referrer"></iframe>
-      <div class="video-tip">播放中 · 点右上角 ✕ 返回商品图</div>
-    `;
+    // 从列表点 ▶ 进来 → hero 直接显示播放器
+    heroHtml =
+      `<button class="video-close"
+         onclick="event.stopPropagation();closeVideoInDetail()">✕</button>` +
+      buildVideoPlayerHtml(g.video) +
+      buildVideoTipHtml(g.video);
     heroClick = '';
   } else {
-    heroHtml = g.img ? `<img src="${g.img}" alt="${g.name}">` : `<span style="font-size:100px;">${g.icon||'📦'}</span>`;
-    if(hasVideo){ heroHtml += `<div class="play-overlay"><div class="pi">▶</div></div>`; }
-    heroClick = hasVideo ? `playVideoInDetail('${g.code}')` : (g.img ? `viewImage('${g.img}')` : '');
+    // 正常进入详情 → 显示商品图（带 ▶ 遮罩，点一下再开视频）
+    heroHtml = normalHeroHtml;
+    heroClick = hasVideo
+      ? `playVideoInDetail('${g.code}')`
+      : (g.img ? `viewImage('${g.img}')` : '');
   }
 
   document.getElementById('detailBody').innerHTML = `
@@ -1853,6 +1896,15 @@ function openDetail(code, autoPlay){
 }
 
 function closeDetail(){
+  // 先停掉正在播放的视频 / iframe，否则关掉弹窗声音还在响
+  const hero = document.querySelector('.detail-hero');
+  stopHeroMedia(hero);
+
+  // 清空详情内容，彻底销毁里面的 iframe / video 节点
+  const body = document.getElementById('detailBody');
+  if(body) body.innerHTML = '';
+  _curDetailNormalHero = '';
+
   document.getElementById('detailMask').classList.remove('show');
   document.getElementById('detailSheet').classList.remove('show');
   curDetailCode = null;
