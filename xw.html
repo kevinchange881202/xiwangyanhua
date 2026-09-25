@@ -924,6 +924,21 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   font-size:12.5px;border-bottom:1px solid #f5f7fc;}
 .od-good:last-child{border-bottom:none;}
 .od-good.total{background:#ffeaea;font-weight:800;color:var(--red);font-size:13.5px;}
+
+/* 新增：客户备注（白底红字 + 红边条，醒目） */
+.od-remark{
+  background:#fff;
+  color:#c1121f;
+  font-weight:800;
+  font-size:13.5px;
+  padding:12px 14px;
+  border-radius:10px;
+  line-height:1.7;
+  word-break:break-word;
+  border-left:4px solid #c1121f;
+  box-shadow:0 1px 4px rgba(193,18,31,.08);
+}
+
 .od-actions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
 .od-actions button{flex:1;min-width:90px;height:38px;border-radius:10px;
   font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px;}
@@ -1018,6 +1033,46 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .empty .ei{font-size:52px;margin-bottom:14px;opacity:.4;}
 .empty .et{font-size:14px;margin-bottom:6px;font-weight:700;}
 .empty .es{font-size:12.5px;}
+
+/* ========== 视频预览弹窗（商家端新增） ========== */
+.video-modal{
+  background:#000;
+  border-radius:16px;
+  width:100%;max-width:720px;
+  max-height:88vh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  margin:auto;
+  animation:popIn .25s cubic-bezier(.4,0,.2,1);
+}
+.video-modal-head{
+  padding:12px 16px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+  flex:0 0 auto;
+  gap:10px;
+}
+.video-modal-head .vt{font-size:15px;font-weight:800;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+.video-modal-head .close{width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.15);color:#fff;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;border:none;}
+.video-modal-head .close:active{background:rgba(255,255,255,.28);}
+.video-modal-body{
+  flex:1;min-height:0;
+  background:#000;
+  position:relative;
+  aspect-ratio:16 / 9;
+  width:100%;
+}
+.video-modal-body iframe{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  border:0;
+  display:block;
+}
 </style>
 </head>
 <body>
@@ -1594,6 +1649,17 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   </div>
 </div>
 
+<!-- 视频预览弹窗（商家端新增） -->
+<div class="confirm-mask" id="videoPreviewMask">
+  <div class="video-modal">
+    <div class="video-modal-head">
+      <div class="vt" id="videoPreviewTitle">▶ 视频预览</div>
+      <button class="close" onclick="closeVideoPreview()">✕</button>
+    </div>
+    <div class="video-modal-body" id="videoPreviewBody"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script>
 const LOGO_IMAGE = '';
@@ -1904,9 +1970,10 @@ function doLogin(){
   }
 }
 function backToLanding(){
-  ['adminApp','staffApp','posView','qrShow','doneView','cameraModal','photoModal','returnView'].forEach(id=>{
+  ['adminApp','staffApp','posView','qrShow','doneView','cameraModal','photoModal','returnView','videoPreviewMask'].forEach(id=>{
     document.getElementById(id).classList.remove('show');
   });
+  document.getElementById('videoPreviewBody').innerHTML = '';
   document.getElementById('loginMask').classList.remove('show');
   document.getElementById('payMask').classList.remove('show');
   document.getElementById('confirmMask').classList.remove('show');
@@ -2443,6 +2510,10 @@ function saveGoods(){
   saveGoodsData();renderGoods();renderStats();closeSheet();
 }
 
+/* ============================================================
+   视频预览
+   —— 【本次改动】改为内嵌弹窗播放，不再跳转外部网页
+   ============================================================ */
 function openVideoPreview(){
   const url = (document.getElementById('fVideo').value || '').trim();
   if(!url){
@@ -2453,8 +2524,13 @@ function openVideoPreview(){
     toast('链接格式不对，请以 http:// 或 https:// 开头');
     return;
   }
-  window.open(url, '_blank');
-  toast('已打开视频，如被微信拦截请点右上角用浏览器打开');
+  document.getElementById('videoPreviewBody').innerHTML =
+    `<iframe src="${url}" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+  document.getElementById('videoPreviewMask').classList.add('show');
+}
+function closeVideoPreview(){
+  document.getElementById('videoPreviewBody').innerHTML = '';
+  document.getElementById('videoPreviewMask').classList.remove('show');
 }
 
 function pickGoodsImage(){
@@ -2936,6 +3012,12 @@ function renderOrders(){
                 <span>¥${o.amount.toLocaleString()}</span></div>
             </div>
           </div>
+          ${o.remark && String(o.remark).trim() ? `
+            <div class="od-sec">
+              <h4>客户备注</h4>
+              <div class="od-remark">${o.remark}</div>
+            </div>
+          ` : ''}
           <div class="od-actions">
             ${o.status==='wait'?`<button class="primary" onclick="changeStatus('${o.code}','paid')">✅ 确认收款</button>`:''}
             ${o.status==='paid'?`<button class="success" onclick="changeStatus('${o.code}','packed')">📦 标记已配货</button>`:''}
