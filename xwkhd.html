@@ -53,25 +53,10 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .ad-scroll{
   min-height:100%;
   display:flex;flex-direction:column;
-  padding:calc(24px + var(--st)) 20px calc(18px + var(--sb));
+  padding:calc(14px + var(--st)) 20px calc(18px + var(--sb));
   position:relative;z-index:1;
 }
-.ad-top{text-align:center;margin-bottom:22px;}
-.ad-logo{
-  width:96px;height:96px;border-radius:28px;margin:0 auto 12px;
-  background:linear-gradient(135deg,#ffd166,#f4a261);
-  display:flex;align-items:center;justify-content:center;
-  font-size:52px;
-  box-shadow:0 0 0 3px rgba(255,209,102,.3),0 16px 40px rgba(0,0,0,.4),
-    inset 0 -5px 16px rgba(217,119,6,.4);
-  overflow:hidden;
-  animation:adLogoFloat 3.5s ease-in-out infinite;
-}
-.ad-logo img{width:100%;height:100%;object-fit:cover;display:block;}
-@keyframes adLogoFloat{
-  0%,100%{transform:translateY(0);}
-  50%{transform:translateY(-6px);}
-}
+.ad-top{text-align:center;margin-bottom:26px;}
 .ad-top h1{
   font-size:clamp(57px,16.5vw,78px);
   font-weight:900;letter-spacing:8px;
@@ -151,30 +136,9 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 }
 .ad-line:active{background:rgba(255,255,255,.22);}
 
-.ad-nav-row{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;
-  margin-top:4px;
-}
-.ad-nav-btn{
-  height:42px;border-radius:11px;
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  font-size:13.5px;font-weight:800;letter-spacing:.3px;
-  text-decoration:none;color:#fff;
-  transition:transform .15s;
-}
-.ad-nav-btn:active{transform:scale(.97);}
-.ad-nav-btn.baidu{
-  background:linear-gradient(135deg,#4f7cff,#3d6aeb);
-  box-shadow:0 5px 12px rgba(79,124,255,.35);
-}
-.ad-nav-btn.amap{
-  background:linear-gradient(135deg,#12b76a,#0a9d56);
-  box-shadow:0 5px 12px rgba(18,183,106,.35);
-}
-
 .ad-start{
   width:100%;height:74px;border-radius:20px;
-  margin-top:10px;
+  margin-top:6px;
   background:linear-gradient(135deg,#ffd166,#f4a261);
   color:#5c2c00;
   font-size:22px;font-weight:900;letter-spacing:2.5px;
@@ -198,18 +162,9 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   box-shadow:0 2px 12px rgba(139,13,21,.3);
   z-index:20;
 }
-.shop-hdr .logo-mini{
-  width:46px;height:46px;flex:0 0 46px;
-  border-radius:13px;overflow:hidden;
-  background:linear-gradient(135deg,#ffd166,#f4a261);
-  display:flex;align-items:center;justify-content:center;
-  font-size:24px;
-  box-shadow:0 0 0 2px rgba(255,209,102,.35);
-}
-.shop-hdr .logo-mini img{width:100%;height:100%;object-fit:cover;display:block;}
 .shop-hdr .hdr-title{
   flex:1;min-width:0;
-  font-size:42px;font-weight:900;letter-spacing:2px;
+  font-size:48px;font-weight:900;letter-spacing:2px;
   color:#ffd166;
   text-shadow:0 3px 16px rgba(255,209,102,.55);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
@@ -1123,7 +1078,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   <div class="shop-page show" id="pageAd">
     <div class="ad-scroll">
       <div class="ad-top">
-        <div class="ad-logo" id="adLogo">🎆</div>
         <h1>喜旺烟花</h1>
         <div class="ad-slogan">
           <span class="line">主营品类：生日烟花、儿童烟花、网红烟花</span>
@@ -1142,15 +1096,11 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
       <div class="ad-contact">
         <a class="ad-line" id="adPhoneLine" href="tel:">
           <span class="ad-line-icon">📞</span>
-          <span class="ad-line-txt" id="adPhone">点击查看商家电话</span>
+          <span class="ad-line-txt">联系电话：<span id="adPhone">点击查看商家电话</span></span>
         </a>
         <div class="ad-line">
           <span class="ad-line-icon">📍</span>
-          <span class="ad-line-txt" id="adAddress">店铺地址</span>
-        </div>
-        <div class="ad-nav-row">
-          <a class="ad-nav-btn baidu" id="adNavBaidu" target="_blank" rel="noopener">🗺️ 百度导航</a>
-          <a class="ad-nav-btn amap" id="adNavAmap" target="_blank" rel="noopener">🗺️ 高德导航</a>
+          <span class="ad-line-txt">地址：<span id="adAddress">店铺地址</span></span>
         </div>
       </div>
 
@@ -1165,7 +1115,6 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   <!-- 首页 -->
   <div class="shop-page" id="pageHome">
     <div class="shop-hdr">
-      <div class="logo-mini" id="shopLogo">🎆</div>
       <div class="hdr-title">喜旺烟花</div>
       <div class="hdr-sub">持证经营<br>支持同城自提</div>
     </div>
@@ -1539,16 +1488,11 @@ function parseOrderTime(str){
 
 /* 广告页初始化 */
 (function initAd(){
-  const logo = QR_CODES.logo || '';
-  if(logo){
-    document.getElementById('adLogo').innerHTML = `<img src="${logo}">`;
-    document.getElementById('shopLogo').innerHTML = `<img src="${logo}">`;
-  }
+  /* 商家 Logo 已取消，不再加载 */
 
   /* 只读 wxAdd：商家微信二维码。没有就留空白，不退回收款码 */
   const qrSrc = QR_CODES.wxAdd || '';
   const qrBox = document.getElementById('adQrBox');
-  const qrEmpty = document.getElementById('adQrEmpty');
   const qrTip = document.getElementById('adQrTip');
   if(qrSrc){
     qrBox.innerHTML = `<img src="${qrSrc}" alt="商家微信二维码">`;
@@ -1563,24 +1507,9 @@ function parseOrderTime(str){
   document.getElementById('adPhoneLine').href = 'tel:' + phone;
   const addr = SHOP_INFO.address || '近海镇新华桥往南500米';
   document.getElementById('adAddress').textContent = addr;
-
-  const baiduEl = document.getElementById('adNavBaidu');
-  const amapEl = document.getElementById('adNavAmap');
-
-  if(SHOP_INFO.baiduUid){
-    baiduEl.href = 'https://map.baidu.com/detail/' + SHOP_INFO.baiduUid;
-  } else if(SHOP_INFO.poiName){
-    baiduEl.href = 'https://map.baidu.com/search/' + encodeURIComponent(SHOP_INFO.poiName);
-  } else {
-    baiduEl.href = 'https://map.baidu.com/search/' + encodeURIComponent(addr);
-  }
-
-  const amapKw = SHOP_INFO.amapKeyword || SHOP_INFO.poiName || addr;
-  amapEl.href = 'https://uri.amap.com/search?keyword=' + encodeURIComponent(amapKw);
 })();
 
 function viewAdQr(){
-  /* 只有 wxAdd 存在才放大，否则不响应 */
   const src = QR_CODES.wxAdd || '';
   if(!src){ toast('商家还没上传微信二维码'); return; }
   document.getElementById('imgViewerSrc').src = src;
