@@ -925,7 +925,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .od-good:last-child{border-bottom:none;}
 .od-good.total{background:#ffeaea;font-weight:800;color:var(--red);font-size:13.5px;}
 
-/* 新增：客户备注（白底红字 + 红边条，醒目） */
+/* 客户备注 */
 .od-remark{
   background:#fff;
   color:#c1121f;
@@ -1034,7 +1034,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .empty .et{font-size:14px;margin-bottom:6px;font-weight:700;}
 .empty .es{font-size:12.5px;}
 
-/* ========== 视频预览弹窗（商家端） ========== */
+/* ========== 视频预览弹窗（商家端）——保留样式，不启用 ========== */
 .video-modal{
   background:#000;
   border-radius:16px;
@@ -1666,7 +1666,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   </div>
 </div>
 
-<!-- 视频预览弹窗（商家端） -->
+<!-- 视频预览弹窗（商家端，已不启用内嵌，保留以免引用报错） -->
 <div class="confirm-mask" id="videoPreviewMask">
   <div class="video-modal">
     <div class="video-modal-head">
@@ -2529,14 +2529,25 @@ function saveGoods(){
 }
 
 /* ============================================================
-   视频预览 · 商家端稳定版
-   - 直链视频（.mp4/.m3u8 等）：<video> 直接播，一次点击即看
-   - 第三方商品页：iframe 原样嵌入，不加多余参数（避免白屏）
-   - 头部带「浏览器打开」兜底，方便 iframe 白屏时跳系统浏览器
-   - 关闭时暂停并清空节点
+   视频预览 · 商家端直接跳浏览器版
+   - 点「▶ 预览」→ 立即 window.open 到系统浏览器播放
+   - 被拦截时用隐藏 <a> 兜底
    ============================================================ */
-function isDirectVideoUrl(url){
-  return /\.(mp4|m4v|mov|webm|ogv|ogg|m3u8)(\?.*)?$/i.test(url);
+function openVideoExternal(url){
+  if(!url) return;
+  let w = null;
+  try{ w = window.open(url, '_blank'); }catch(e){}
+  if(!w || w.closed || typeof w.closed === 'undefined'){
+    try{
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ try{ a.remove(); }catch(e){} }, 200);
+    }catch(e){}
+  }
 }
 
 function openVideoPreview(){
@@ -2549,42 +2560,11 @@ function openVideoPreview(){
     toast('链接格式不对，请以 http:// 或 https:// 开头');
     return;
   }
-  const body  = document.getElementById('videoPreviewBody');
-  const title = document.getElementById('videoPreviewTitle');
-  const openBtn = document.getElementById('videoPreviewOpen');
-
-  if(title) title.textContent = '▶ 视频预览';
-
-  if(isDirectVideoUrl(url)){
-    // 直链视频：原生 <video> 播放
-    body.innerHTML =
-      `<video id="previewVideoEl" controls autoplay muted
-              playsinline webkit-playsinline preload="auto"></video>`;
-    const v = document.getElementById('previewVideoEl');
-    v.src = url;
-    const p = v.play();
-    if(p && p.catch) p.catch(()=>{});
-    if(openBtn) openBtn.style.display = 'none';
-  } else {
-    // 第三方页面：原样 iframe 嵌入，不加任何参数
-    body.innerHTML =
-      `<iframe src="${url}"
-        allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-        allowfullscreen referrerpolicy="no-referrer"></iframe>`;
-    if(openBtn){
-      openBtn.href = url;
-      openBtn.style.display = 'flex';
-    }
-  }
-
-  document.getElementById('videoPreviewMask').classList.add('show');
+  openVideoExternal(url);
 }
 
+/* 兼容保留：防止历史代码调用报错；现在不再弹窗内嵌 */
 function closeVideoPreview(){
-  const v = document.getElementById('previewVideoEl');
-  if(v){
-    try{ v.pause(); v.removeAttribute('src'); v.load(); }catch(e){}
-  }
   const body = document.getElementById('videoPreviewBody');
   if(body) body.innerHTML = '';
   const openBtn = document.getElementById('videoPreviewOpen');
@@ -3107,7 +3087,6 @@ function askCancelOrder(code){
   }
   if(!confirm(msg)) return;
 
-  // 恢复库存
   if(needRestore){
     (o.goods||[]).forEach(item=>{
       const gd = GOODS.find(x=>x.name===item.name);
