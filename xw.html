@@ -1034,7 +1034,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 .empty .et{font-size:14px;margin-bottom:6px;font-weight:700;}
 .empty .es{font-size:12.5px;}
 
-/* ========== 视频预览弹窗（商家端新增） ========== */
+/* ========== 视频预览弹窗（商家端） ========== */
 .video-modal{
   background:#000;
   border-radius:16px;
@@ -1055,10 +1055,20 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 }
 .video-modal-head .vt{font-size:15px;font-weight:800;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+.video-modal-head .vopen{
+  flex:0 0 auto;
+  padding:7px 12px;border-radius:8px;
+  background:linear-gradient(135deg,#4f7cff,#3d6aeb);
+  color:#fff;font-size:12.5px;font-weight:800;
+  text-decoration:none;white-space:nowrap;
+  display:flex;align-items:center;gap:4px;
+  box-shadow:0 4px 10px rgba(79,124,255,.4);
+}
+.video-modal-head .vopen:active{transform:scale(.96);}
 .video-modal-head .close{width:34px;height:34px;border-radius:50%;
   background:rgba(255,255,255,.15);color:#fff;font-size:16px;
   display:flex;align-items:center;justify-content:center;
-  transition:background .15s;border:none;}
+  transition:background .15s;border:none;flex:0 0 34px;}
 .video-modal-head .close:active{background:rgba(255,255,255,.28);}
 .video-modal-body{
   flex:1;min-height:0;
@@ -1071,6 +1081,13 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   position:absolute;inset:0;
   width:100%;height:100%;
   border:0;
+  display:block;
+}
+.video-modal-body video{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:contain;
+  background:#000;
   display:block;
 }
 </style>
@@ -1649,11 +1666,12 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   </div>
 </div>
 
-<!-- 视频预览弹窗（商家端新增） -->
+<!-- 视频预览弹窗（商家端） -->
 <div class="confirm-mask" id="videoPreviewMask">
   <div class="video-modal">
     <div class="video-modal-head">
       <div class="vt" id="videoPreviewTitle">▶ 视频预览</div>
+      <a class="vopen" id="videoPreviewOpen" href="#" target="_blank" rel="noopener" style="display:none;">🌐 浏览器打开</a>
       <button class="close" onclick="closeVideoPreview()">✕</button>
     </div>
     <div class="video-modal-body" id="videoPreviewBody"></div>
@@ -2511,9 +2529,16 @@ function saveGoods(){
 }
 
 /* ============================================================
-   视频预览
-   —— 【本次改动】改为内嵌弹窗播放，不再跳转外部网页
+   视频预览 · 商家端稳定版
+   - 直链视频（.mp4/.m3u8 等）：<video> 直接播，一次点击即看
+   - 第三方商品页：iframe 原样嵌入，不加多余参数（避免白屏）
+   - 头部带「浏览器打开」兜底，方便 iframe 白屏时跳系统浏览器
+   - 关闭时暂停并清空节点
    ============================================================ */
+function isDirectVideoUrl(url){
+  return /\.(mp4|m4v|mov|webm|ogv|ogg|m3u8)(\?.*)?$/i.test(url);
+}
+
 function openVideoPreview(){
   const url = (document.getElementById('fVideo').value || '').trim();
   if(!url){
@@ -2524,12 +2549,46 @@ function openVideoPreview(){
     toast('链接格式不对，请以 http:// 或 https:// 开头');
     return;
   }
-  document.getElementById('videoPreviewBody').innerHTML =
-    `<iframe src="${url}" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+  const body  = document.getElementById('videoPreviewBody');
+  const title = document.getElementById('videoPreviewTitle');
+  const openBtn = document.getElementById('videoPreviewOpen');
+
+  if(title) title.textContent = '▶ 视频预览';
+
+  if(isDirectVideoUrl(url)){
+    // 直链视频：原生 <video> 播放
+    body.innerHTML =
+      `<video id="previewVideoEl" controls autoplay muted
+              playsinline webkit-playsinline preload="auto"></video>`;
+    const v = document.getElementById('previewVideoEl');
+    v.src = url;
+    const p = v.play();
+    if(p && p.catch) p.catch(()=>{});
+    if(openBtn) openBtn.style.display = 'none';
+  } else {
+    // 第三方页面：原样 iframe 嵌入，不加任何参数
+    body.innerHTML =
+      `<iframe src="${url}"
+        allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+        allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+    if(openBtn){
+      openBtn.href = url;
+      openBtn.style.display = 'flex';
+    }
+  }
+
   document.getElementById('videoPreviewMask').classList.add('show');
 }
+
 function closeVideoPreview(){
-  document.getElementById('videoPreviewBody').innerHTML = '';
+  const v = document.getElementById('previewVideoEl');
+  if(v){
+    try{ v.pause(); v.removeAttribute('src'); v.load(); }catch(e){}
+  }
+  const body = document.getElementById('videoPreviewBody');
+  if(body) body.innerHTML = '';
+  const openBtn = document.getElementById('videoPreviewOpen');
+  if(openBtn){ openBtn.style.display = 'none'; openBtn.href = '#'; }
   document.getElementById('videoPreviewMask').classList.remove('show');
 }
 
