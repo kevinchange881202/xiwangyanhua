@@ -772,10 +772,8 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
 }
 
 .done-wrap{
-  flex:1;overflow-y:auto;
   padding:calc(18px + var(--st)) 18px calc(20px + var(--sb));
   text-align:center;
-  -webkit-overflow-scrolling:touch;
 }
 .done-icon{
   width:91px;height:91px;border-radius:50%;
@@ -1289,7 +1287,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   <!-- 下单成功页 -->
   <div class="shop-page" id="pageDone">
     <div class="shop-body">
-      <div class="scroll" style="padding:0;overflow:hidden;">
+      <div class="scroll" style="padding:0;">
         <div class="done-wrap">
           <div class="done-icon">✓</div>
           <div class="done-title">下单成功</div>
@@ -1304,7 +1302,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
             <div class="dc-row"><span class="l">手机号</span><span class="v" id="dnPhone">—</span></div>
             <div class="dc-row"><span class="l">商品件数</span><span class="v" id="dnCount">—</span></div>
             <div class="dc-row"><span class="l">提货时间</span><span class="v" id="dnPickTime">待选择</span></div>
-            <!-- 新增：备注行（有备注才显示） -->
+            <!-- 备注行（有备注才显示） -->
             <div class="dc-row remark-row" id="dnRemarkRow" style="display:none;">
               <span class="l">备注</span>
               <span class="v" id="dnRemark">—</span>
@@ -1515,8 +1513,32 @@ function toast(msg){
   clearTimeout(t._tm);
   t._tm = setTimeout(()=>t.classList.remove('show'), 1900);
 }
-function saveCart(){ SafeStore.set('fw_shop_cart', CART); }
+/* 保存购物车：localStorage 失败时用 sessionStorage 兜底 */
+function saveCart(){
+  const ok = SafeStore.set('fw_shop_cart', CART);
+  if(!ok){
+    try{ sessionStorage.setItem('fw_shop_cart_bak', JSON.stringify(CART)); }catch(e){}
+  } else {
+    try{ sessionStorage.removeItem('fw_shop_cart_bak'); }catch(e){}
+  }
+}
 function saveOrders(){ SafeStore.set('fw_orders', ORDERS); }
+
+/* 启动时：如果 localStorage 里读不到，尝试从 sessionStorage 恢复 */
+(function recoverCart(){
+  if(!Array.isArray(CART) || CART.length === 0){
+    try{
+      const bak = sessionStorage.getItem('fw_shop_cart_bak');
+      if(bak){
+        const data = JSON.parse(bak);
+        if(Array.isArray(data) && data.length){
+          CART = data;
+          SafeStore.set('fw_shop_cart', CART);
+        }
+      }
+    }catch(e){}
+  }
+})();
 
 function parseOrderTime(str){
   if(!str) return null;
@@ -1565,6 +1587,11 @@ function showPage(id){
   });
 }
 function startShopping(){
+  /* 标记用户已经进入过首页（用于刷新后恢复） */
+  try{
+    sessionStorage.setItem('fw_shop_started', '1');
+    sessionStorage.setItem('fw_shop_cur_tab', 'home');
+  }catch(e){}
   showPage('pageHome');
   renderCats();
   renderShopGoods();
@@ -1572,11 +1599,18 @@ function startShopping(){
   window.scrollTo(0,0);
 }
 function backToAd(){
+  try{
+    sessionStorage.removeItem('fw_shop_started');
+    sessionStorage.removeItem('fw_shop_cur_tab');
+  }catch(e){}
   showPage('pageAd');
   curOrderCode = null;
   pendingOrderCode = null;
 }
 function switchShopTab(tab){
+  /* 记住当前所在 tab，刷新后可以恢复 */
+  try{ sessionStorage.setItem('fw_shop_cur_tab', tab); }catch(e){}
+
   document.querySelectorAll('.shop-tabbar .stab').forEach(el=>{
     el.classList.toggle('active', el.dataset.page===tab);
   });
@@ -1642,7 +1676,7 @@ function buildCardHtml(g){
   const soldOut = (g.stock||0)<=0;
   const hasVideo = !!(g.video||'').trim();
   let imgHtml = g.img ? `<img src="${g.img}" alt="${g.name}" loading="lazy">` : `<span style="font-size:clamp(48px,13vw,72px);">${g.icon||'📦'}</span>`;
-  // 列表页点击播放按钮 → 打开详情页并自动播放
+  // 列表页点击播放 → 打开详情页并直接进入视频界面
   const playHtml = hasVideo ? `<div class="play-overlay" onclick="event.stopPropagation();playVideo('${g.code}')"><div class="pi">▶</div></div>` : '';
   const footHtml = buildFootHtml(g);
   return `
@@ -1716,8 +1750,8 @@ function quickQty(code, d){
 
 /* ============================================================
    视频播放
-   —— 【本次改动】列表页点击播放：打开详情页并自动开始内嵌播放
-   —— 详情页点击播放：在当前页面内嵌 iframe 播放，不跳转外部网页
+   —— 列表点 ▶ → 打开详情页 → hero 里直接渲染 iframe（一步到位）
+   —— 详情页 hero 本身有视频时，也可以点 ▶ 进入内嵌播放
    ============================================================ */
 function playVideo(code){
   const g = GOODS.find(x=>x.code===code);
@@ -1730,11 +1764,8 @@ function playVideoInDetail(code){
   if(!g || !g.video) return;
   const hero = document.querySelector('.detail-hero');
   if(!hero) return;
-  // 已经在内嵌播放就不重复触发
   if(hero.querySelector('.video-frame')) return;
-  // 保存原始内容，以便关闭视频后恢复
   hero.dataset.origHtml = hero.innerHTML;
-  hero.dataset.videoCode = code;
   hero.innerHTML = `
     <button class="video-close" onclick="event.stopPropagation();closeVideoInDetail()">✕</button>
     <iframe class="video-frame"
@@ -1752,7 +1783,6 @@ function closeVideoInDetail(){
   if(hero.dataset.origHtml){
     hero.innerHTML = hero.dataset.origHtml;
     hero.dataset.origHtml = '';
-    hero.dataset.videoCode = '';
   }
 }
 
@@ -1765,10 +1795,26 @@ function openDetail(code, autoPlay){
   const soldOut = (g.stock||0)<=0;
   const hasVideo = !!(g.video||'').trim();
   document.getElementById('dtTitle').textContent = g.name;
-  let heroHtml = g.img ? `<img src="${g.img}" alt="${g.name}">` : `<span style="font-size:100px;">${g.icon||'📦'}</span>`;
-  if(hasVideo){ heroHtml += `<div class="play-overlay"><div class="pi">▶</div></div>`; }
-  // 有视频：点击 hero 就在内部播放；无视频有图：放大查看
-  const heroClick = hasVideo ? `playVideoInDetail('${g.code}')` : (g.img ? `viewImage('${g.img}')` : '');
+
+  let heroHtml, heroClick;
+  if(autoPlay && hasVideo){
+    /* 从列表点播放进来 → 直接在 hero 里渲染内嵌视频，用户一次点击就能看视频 */
+    heroHtml = `
+      <button class="video-close" onclick="event.stopPropagation();closeVideoInDetail()">✕</button>
+      <iframe class="video-frame"
+        src="${g.video}"
+        allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+        allowfullscreen
+        referrerpolicy="no-referrer"></iframe>
+      <div class="video-tip">播放中 · 点右上角 ✕ 返回商品图</div>
+    `;
+    heroClick = '';
+  } else {
+    heroHtml = g.img ? `<img src="${g.img}" alt="${g.name}">` : `<span style="font-size:100px;">${g.icon||'📦'}</span>`;
+    if(hasVideo){ heroHtml += `<div class="play-overlay"><div class="pi">▶</div></div>`; }
+    heroClick = hasVideo ? `playVideoInDetail('${g.code}')` : (g.img ? `viewImage('${g.img}')` : '');
+  }
+
   document.getElementById('detailBody').innerHTML = `
     <div class="detail-hero" ${heroClick?`onclick="${heroClick}"`:''}>${heroHtml}</div>
     <div class="detail-name">${g.name}</div>
@@ -1804,11 +1850,6 @@ function openDetail(code, autoPlay){
   }
   document.getElementById('detailMask').classList.add('show');
   document.getElementById('detailSheet').classList.add('show');
-
-  // 从列表页播放按钮进来 → 自动开始内嵌播放
-  if(autoPlay && hasVideo){
-    setTimeout(()=>playVideoInDetail(code), 260);
-  }
 }
 
 function closeDetail(){
@@ -1990,10 +2031,7 @@ function confirmAfterOrder(){
   SFX.click();
 }
 
-/* ============================================================
-   下单成功页渲染
-   —— 【本次改动】增加备注显示（有备注才显示，没有就隐藏）
-   ============================================================ */
+/* 下单成功页渲染 */
 function renderDonePage(order){
   document.getElementById('dnCode').textContent = order.code;
   document.getElementById('dnName').textContent = order.name;
@@ -2003,7 +2041,6 @@ function renderDonePage(order){
   document.getElementById('dnAmount').textContent = '¥' + (order.amount||0).toLocaleString();
   document.getElementById('dnPickTime').textContent = order.pickTime || '待选择';
 
-  // ★ 备注显示
   const remarkRow = document.getElementById('dnRemarkRow');
   const remarkEl = document.getElementById('dnRemark');
   if(order.remark && String(order.remark).trim()){
@@ -2290,7 +2327,24 @@ document.querySelectorAll('.confirm-mask').forEach(m=>{
   });
 });
 
-(function(){ updateCartBadge(); updateCartFab(); })();
+/* ============================================================
+   初始化：刷新后恢复上次所在的页面
+   ============================================================ */
+(function initShop(){
+  updateCartBadge();
+  updateCartFab();
+  /* 如果用户之前点过"开始购物"，刷新后恢复到之前的 tab */
+  try{
+    const started = sessionStorage.getItem('fw_shop_started');
+    if(started === '1'){
+      const savedTab = sessionStorage.getItem('fw_shop_cur_tab') || 'home';
+      showPage('pageHome');
+      renderCats();
+      renderShopGoods();
+      switchShopTab(savedTab);
+    }
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
