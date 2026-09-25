@@ -595,7 +595,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   padding-left:5px;
   box-shadow:0 8px 26px rgba(0,0,0,.45);
 }
-/* 详情页内嵌视频播放 */
+/* 详情页内嵌视频播放（保留样式，实际不再使用） */
 .detail-hero .video-frame{
   position:absolute;inset:0;
   width:100%;height:100%;
@@ -1677,7 +1677,7 @@ function buildCardHtml(g){
   const soldOut = (g.stock||0)<=0;
   const hasVideo = !!(g.video||'').trim();
   let imgHtml = g.img ? `<img src="${g.img}" alt="${g.name}" loading="lazy">` : `<span style="font-size:clamp(48px,13vw,72px);">${g.icon||'📦'}</span>`;
-  // 列表页点击播放 → 打开详情页并直接进入视频界面
+  // 列表页点击 ▶ → 直接跳浏览器播放
   const playHtml = hasVideo ? `<div class="play-overlay" onclick="event.stopPropagation();playVideo('${g.code}')"><div class="pi">▶</div></div>` : '';
   const footHtml = buildFootHtml(g);
   return `
@@ -1750,37 +1750,42 @@ function quickQty(code, d){
 }
 
 /* ============================================================
-   视频播放 · 稳定回退版
-   规则：
-   1) 直链 .mp4 / .m3u8 等 → <video> 直接播
-   2) 其他网页（包括 app.fireworks-online.cn 这种）→ iframe 原样嵌入，
-      不加任何参数，避免对方页面白屏
-   3) 视频提示条里永远带一个「在浏览器中打开」兜底
-   4) 关闭详情/关闭视频时，先暂停媒体再销毁节点
+   视频播放 · 直接跳浏览器版
+   - 点列表 ▶ 或详情页 ▶ → 直接 window.open 到系统浏览器播放
+   - 不做 iframe 内嵌，兼容所有第三方视频页
    ============================================================ */
-function isDirectVideo(url){
-  return /\.(mp4|m4v|mov|webm|ogv|ogg|m3u8)(\?.*)?$/i.test(url);
-}
-
-function buildVideoPlayerHtml(url){
-  if(isDirectVideo(url)){
-    return `<video class="video-frame" src="${url}"
-      controls autoplay muted playsinline webkit-playsinline></video>`;
+function openVideoExternal(url){
+  if(!url) return;
+  let w = null;
+  try{ w = window.open(url, '_blank'); }catch(e){}
+  if(!w || w.closed || typeof w.closed === 'undefined'){
+    // 被浏览器拦截时，用隐藏 a 标签兜底
+    try{
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ try{ a.remove(); }catch(e){} }, 200);
+    }catch(e){}
   }
-  return `<iframe class="video-frame" src="${url}"
-    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-    allowfullscreen referrerpolicy="no-referrer"></iframe>`;
 }
 
-function buildVideoTipHtml(url){
-  return `<div class="video-tip">
-    <a href="${url}" target="_blank" rel="noopener"
-       style="color:#ffd166;text-decoration:underline;font-weight:800;"
-       onclick="event.stopPropagation();">在浏览器中打开</a>
-    &nbsp;·&nbsp;点右上角 ✕ 返回商品图
-  </div>`;
+function playVideo(code){
+  const g = GOODS.find(x=>x.code===code);
+  if(!g){ toast('商品不存在'); return; }
+  if(!(g.video||'').trim()){ toast('该商品暂无视频'); return; }
+  openVideoExternal(g.video);
 }
 
+function playVideoInDetail(code){
+  const g = GOODS.find(x=>x.code===code);
+  if(!g || !(g.video||'').trim()) return;
+  openVideoExternal(g.video);
+}
+
+/* 兼容保留：如果历史上 hero 里加载过 iframe/video，关闭时清理 */
 function stopHeroMedia(hero){
   if(!hero) return;
   const v = hero.querySelector('video');
@@ -1793,29 +1798,8 @@ function stopHeroMedia(hero){
   }
 }
 
-function playVideo(code){
-  const g = GOODS.find(x=>x.code===code);
-  if(!g){ toast('商品不存在'); return; }
-  if(!(g.video||'').trim()){ toast('该商品暂无视频'); return; }
-  openDetail(code, true);
-}
-
-function playVideoInDetail(code){
-  const g = GOODS.find(x=>x.code===code);
-  if(!g || !(g.video||'').trim()) return;
-  const hero = document.querySelector('.detail-hero');
-  if(!hero) return;
-  if(hero.querySelector('.video-frame')) return;
-
-  _curDetailNormalHero = hero.innerHTML;
-  hero.innerHTML =
-    `<button class="video-close"
-       onclick="event.stopPropagation();closeVideoInDetail()">✕</button>` +
-    buildVideoPlayerHtml(g.video) +
-    buildVideoTipHtml(g.video);
-}
-
 function closeVideoInDetail(){
+  // 保留函数名，避免历史调用报错；实际不再内嵌播放
   const hero = document.querySelector('.detail-hero');
   if(!hero) return;
   stopHeroMedia(hero);
@@ -1833,7 +1817,7 @@ function openDetail(code, autoPlay){
   document.getElementById('dtTitle').textContent = g.name;
 
   let heroHtml, heroClick;
-  // 先构建正常的 hero（商品图 + 可选 ▶ 遮罩），用于关闭视频后恢复
+  // hero 永远显示商品图 + 可选 ▶ 遮罩（点一下直接跳浏览器）
   let normalHeroHtml = g.img
     ? `<img src="${g.img}" alt="${g.name}">`
     : `<span style="font-size:100px;">${g.icon||'📦'}</span>`;
@@ -1842,21 +1826,10 @@ function openDetail(code, autoPlay){
   }
   _curDetailNormalHero = normalHeroHtml;
 
-  if(autoPlay && hasVideo){
-    // 从列表点 ▶ 进来 → hero 直接显示播放器
-    heroHtml =
-      `<button class="video-close"
-         onclick="event.stopPropagation();closeVideoInDetail()">✕</button>` +
-      buildVideoPlayerHtml(g.video) +
-      buildVideoTipHtml(g.video);
-    heroClick = '';
-  } else {
-    // 正常进入详情 → 显示商品图（带 ▶ 遮罩，点一下再开视频）
-    heroHtml = normalHeroHtml;
-    heroClick = hasVideo
-      ? `playVideoInDetail('${g.code}')`
-      : (g.img ? `viewImage('${g.img}')` : '');
-  }
+  heroHtml = normalHeroHtml;
+  heroClick = hasVideo
+    ? `playVideoInDetail('${g.code}')`
+    : (g.img ? `viewImage('${g.img}')` : '');
 
   document.getElementById('detailBody').innerHTML = `
     <div class="detail-hero" ${heroClick?`onclick="${heroClick}"`:''}>${heroHtml}</div>
@@ -1896,11 +1869,10 @@ function openDetail(code, autoPlay){
 }
 
 function closeDetail(){
-  // 先停掉正在播放的视频 / iframe，否则关掉弹窗声音还在响
+  // 兼容清理：如果 hero 里有残留的 video/iframe，先停掉再清空
   const hero = document.querySelector('.detail-hero');
   stopHeroMedia(hero);
 
-  // 清空详情内容，彻底销毁里面的 iframe / video 节点
   const body = document.getElementById('detailBody');
   if(body) body.innerHTML = '';
   _curDetailNormalHero = '';
