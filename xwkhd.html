@@ -595,6 +595,34 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   padding-left:5px;
   box-shadow:0 8px 26px rgba(0,0,0,.45);
 }
+/* 详情页内嵌视频播放 */
+.detail-hero .video-frame{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  border:0;background:#000;
+  z-index:2;display:block;
+}
+.detail-hero .video-close{
+  position:absolute;
+  top:10px;right:10px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(0,0,0,.68);color:#fff;
+  font-size:16px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  z-index:5;cursor:pointer;border:none;
+  box-shadow:0 2px 8px rgba(0,0,0,.45);
+}
+.detail-hero .video-close:active{transform:scale(.94);}
+.detail-hero .video-tip{
+  position:absolute;
+  bottom:10px;left:10px;right:10px;
+  background:rgba(0,0,0,.62);
+  color:#fff;font-size:11.5px;
+  padding:6px 10px;border-radius:8px;
+  text-align:center;
+  z-index:4;
+  pointer-events:none;
+}
 .detail-name{
   font-size:19px;font-weight:900;line-height:1.35;
   margin-bottom:8px;
@@ -803,6 +831,17 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
   font-weight:800;text-align:right;font-size:15.5px;
   max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   color:var(--t1);
+}
+/* 备注行：长文本可以换行显示 */
+.done-card .dc-row.remark-row{
+  align-items:flex-start;
+}
+.done-card .dc-row.remark-row .v{
+  max-width:65%;
+  white-space:normal;
+  word-break:break-word;
+  line-height:1.6;
+  font-size:14px;
 }
 .done-card .dc-row.total{
   border-top:2px dashed var(--line);
@@ -1265,6 +1304,11 @@ input,select,textarea{font-family:inherit;outline:none;border:none;background:no
             <div class="dc-row"><span class="l">手机号</span><span class="v" id="dnPhone">—</span></div>
             <div class="dc-row"><span class="l">商品件数</span><span class="v" id="dnCount">—</span></div>
             <div class="dc-row"><span class="l">提货时间</span><span class="v" id="dnPickTime">待选择</span></div>
+            <!-- 新增：备注行（有备注才显示） -->
+            <div class="dc-row remark-row" id="dnRemarkRow" style="display:none;">
+              <span class="l">备注</span>
+              <span class="v" id="dnRemark">—</span>
+            </div>
             <div class="dc-row total"><span class="l">订单金额</span><span class="v" id="dnAmount">¥0</span></div>
           </div>
 
@@ -1598,6 +1642,7 @@ function buildCardHtml(g){
   const soldOut = (g.stock||0)<=0;
   const hasVideo = !!(g.video||'').trim();
   let imgHtml = g.img ? `<img src="${g.img}" alt="${g.name}" loading="lazy">` : `<span style="font-size:clamp(48px,13vw,72px);">${g.icon||'📦'}</span>`;
+  // 列表页点击播放按钮 → 打开详情页并自动播放
   const playHtml = hasVideo ? `<div class="play-overlay" onclick="event.stopPropagation();playVideo('${g.code}')"><div class="pi">▶</div></div>` : '';
   const footHtml = buildFootHtml(g);
   return `
@@ -1668,15 +1713,51 @@ function quickQty(code, d){
   }
   SFX.click();
 }
+
+/* ============================================================
+   视频播放
+   —— 【本次改动】列表页点击播放：打开详情页并自动开始内嵌播放
+   —— 详情页点击播放：在当前页面内嵌 iframe 播放，不跳转外部网页
+   ============================================================ */
 function playVideo(code){
   const g = GOODS.find(x=>x.code===code);
   if(!g || !g.video){ return; }
-  window.open(g.video, '_blank');
-  toast('已打开视频，如被微信拦截请点右上角用浏览器打开');
+  openDetail(code, true);
+}
+
+function playVideoInDetail(code){
+  const g = GOODS.find(x=>x.code===code);
+  if(!g || !g.video) return;
+  const hero = document.querySelector('.detail-hero');
+  if(!hero) return;
+  // 已经在内嵌播放就不重复触发
+  if(hero.querySelector('.video-frame')) return;
+  // 保存原始内容，以便关闭视频后恢复
+  hero.dataset.origHtml = hero.innerHTML;
+  hero.dataset.videoCode = code;
+  hero.innerHTML = `
+    <button class="video-close" onclick="event.stopPropagation();closeVideoInDetail()">✕</button>
+    <iframe class="video-frame"
+      src="${g.video}"
+      allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+      allowfullscreen
+      referrerpolicy="no-referrer"></iframe>
+    <div class="video-tip">播放中 · 点右上角 ✕ 返回商品图</div>
+  `;
+}
+
+function closeVideoInDetail(){
+  const hero = document.querySelector('.detail-hero');
+  if(!hero) return;
+  if(hero.dataset.origHtml){
+    hero.innerHTML = hero.dataset.origHtml;
+    hero.dataset.origHtml = '';
+    hero.dataset.videoCode = '';
+  }
 }
 
 /* 商品详情 */
-function openDetail(code){
+function openDetail(code, autoPlay){
   const g = GOODS.find(x=>x.code===code);
   if(!g) return;
   curDetailCode = code;
@@ -1686,7 +1767,8 @@ function openDetail(code){
   document.getElementById('dtTitle').textContent = g.name;
   let heroHtml = g.img ? `<img src="${g.img}" alt="${g.name}">` : `<span style="font-size:100px;">${g.icon||'📦'}</span>`;
   if(hasVideo){ heroHtml += `<div class="play-overlay"><div class="pi">▶</div></div>`; }
-  const heroClick = hasVideo ? `playVideo('${g.code}')` : (g.img ? `viewImage('${g.img}')` : '');
+  // 有视频：点击 hero 就在内部播放；无视频有图：放大查看
+  const heroClick = hasVideo ? `playVideoInDetail('${g.code}')` : (g.img ? `viewImage('${g.img}')` : '');
   document.getElementById('detailBody').innerHTML = `
     <div class="detail-hero" ${heroClick?`onclick="${heroClick}"`:''}>${heroHtml}</div>
     <div class="detail-name">${g.name}</div>
@@ -1722,7 +1804,13 @@ function openDetail(code){
   }
   document.getElementById('detailMask').classList.add('show');
   document.getElementById('detailSheet').classList.add('show');
+
+  // 从列表页播放按钮进来 → 自动开始内嵌播放
+  if(autoPlay && hasVideo){
+    setTimeout(()=>playVideoInDetail(code), 260);
+  }
 }
+
 function closeDetail(){
   document.getElementById('detailMask').classList.remove('show');
   document.getElementById('detailSheet').classList.remove('show');
@@ -1901,6 +1989,11 @@ function confirmAfterOrder(){
   showPage('pageDone');
   SFX.click();
 }
+
+/* ============================================================
+   下单成功页渲染
+   —— 【本次改动】增加备注显示（有备注才显示，没有就隐藏）
+   ============================================================ */
 function renderDonePage(order){
   document.getElementById('dnCode').textContent = order.code;
   document.getElementById('dnName').textContent = order.name;
@@ -1909,6 +2002,16 @@ function renderDonePage(order){
   document.getElementById('dnCount').textContent = cnt + ' 件';
   document.getElementById('dnAmount').textContent = '¥' + (order.amount||0).toLocaleString();
   document.getElementById('dnPickTime').textContent = order.pickTime || '待选择';
+
+  // ★ 备注显示
+  const remarkRow = document.getElementById('dnRemarkRow');
+  const remarkEl = document.getElementById('dnRemark');
+  if(order.remark && String(order.remark).trim()){
+    remarkEl.textContent = order.remark;
+    remarkRow.style.display = 'flex';
+  } else {
+    remarkRow.style.display = 'none';
+  }
 }
 
 /* ============================================================
@@ -2114,15 +2217,11 @@ function saveEditInfo(){
   toast('提货人信息已更新');
 }
 
-/* ============================================================
-   我的订单
-   —— 【本次改动核心】过滤掉已完成（done）和已取消（cancel）
-   ============================================================ */
+/* 我的订单（已完成/已取消不显示） */
 function queryMyOrders(){
   const phone = (document.getElementById('orderPhone').value||'').trim();
   if(!/^1[3-9]\d{9}$/.test(phone)){ SFX.error(); toast('请输入正确的 11 位手机号'); return; }
   ORDERS = SafeStore.get('fw_orders', []) || [];
-  // ★★★ 关键改动：只显示待付款/已付款/已配货的订单，隐藏已完成和已取消 ★★★
   const mine = ORDERS.filter(o=>o.phone===phone && o.status!=='done' && o.status!=='cancel');
   const box = document.getElementById('ordersList');
   if(!mine.length){
